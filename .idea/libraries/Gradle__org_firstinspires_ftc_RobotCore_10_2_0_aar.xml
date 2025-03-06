@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="Gradle: org.firstinspires.ftc:RobotCore:10.2.0@aar" external-system-id="GRADLE">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../caches/8.11.1/transforms/e87f7cb069be8fd38c2efd3635e52611/transformed/RobotCore-10.2.0/jars/libs/gson-extras-0.2.1.jar!/" />
+      <root url="file://$PROJECT_DIR$/../caches/8.11.1/transforms/e87f7cb069be8fd38c2efd3635e52611/transformed/RobotCore-10.2.0/res" />
+      <root url="jar://$PROJECT_DIR$/../caches/8.11.1/transforms/e87f7cb069be8fd38c2efd3635e52611/transformed/RobotCore-10.2.0/jars/classes.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../caches/8.11.1/transforms/e87f7cb069be8fd38c2efd3635e52611/transformed/RobotCore-10.2.0/jars/libs/gson-2.8.0.jar!/" />
+      <root url="file://$PROJECT_DIR$/../caches/8.11.1/transforms/e87f7cb069be8fd38c2efd3635e52611/transformed/RobotCore-10.2.0/AndroidManifest.xml" />
+      <root url="jar://$PROJECT_DIR$/../caches/8.11.1/transforms/e87f7cb069be8fd38c2efd3635e52611/transformed/RobotCore-10.2.0/jars/libs/slf4j-api-1.7.26.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../caches/8.11.1/transforms/e87f7cb069be8fd38c2efd3635e52611/transformed/RobotCore-10.2.0/jars/libs/slf4j-handroid-1.7.27.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$PROJECT_DIR$/../caches/modules-2/files-2.1/org.firstinspires.ftc/RobotCore/10.2.0/2e7f9dd17b0786877a212ffe8926e2b69360c596/RobotCore-10.2.0-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/../caches/modules-2/files-2.1/org.firstinspires.ftc/RobotCore/10.2.0/2a5ff6cd898455e723b6975ac4b6c8278ac25a05/RobotCore-10.2.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
