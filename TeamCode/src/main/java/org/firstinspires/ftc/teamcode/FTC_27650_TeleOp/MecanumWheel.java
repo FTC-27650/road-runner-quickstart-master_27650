@@ -19,6 +19,7 @@ public class MecanumWheel extends LinearOpMode {
     public static double purpleMin = 225, purpleMax = 250;
     public static double rotatePowerStart = 0.2;
     public static double rotateMotorMinPower = 0.6;
+    public static double shooterMotorPower = 0;
     final float[] hsvValuesLeft = new float[3]; //左边色调
     final float[] hsvValuesRight = new float[3];//右边色调
     private final ElapsedTime runtime = new ElapsedTime();
@@ -28,6 +29,7 @@ public class MecanumWheel extends LinearOpMode {
     Mecanum_1Thread Mecanum_1Thread = new Mecanum_1Thread();
     inBallPrepareThread inBallPrepareThread = new inBallPrepareThread();
     outBallPrepareThread outBallPrepareThread = new outBallPrepareThread();
+    shooterThread shooterThread = new shooterThread();
     //public static double rotateServoPosition = 0.5;//旋转模式舵机 0.5停止    0正着转   1反着转
     //public static double rotateServoSpeed = 0.5; //  0 - 0.5 舵机旋转变快
     double strikerServoPosition = 0.6;//角度舵机    0.5代表转到中间
@@ -38,6 +40,7 @@ public class MecanumWheel extends LinearOpMode {
 
     int rotateMotorTargetPosition = 0;
     double rotateMotorPower = 0;
+    double collectMotorPower = 0;
     int a = 1;
     int b = 1;
     double rotateMotorCurrentPosition = 0;
@@ -47,7 +50,7 @@ public class MecanumWheel extends LinearOpMode {
     public void runOpMode() {
 
         robot.init();
-        rotateMotorCurrentPosition =robot.rotateMotor.getCurrentPosition();
+        rotateMotorCurrentPosition = robot.rotateMotor.getCurrentPosition();
         robot.strikerServo.setPosition(strikerServoPosition);
         sleep(200);
 
@@ -85,8 +88,12 @@ public class MecanumWheel extends LinearOpMode {
                 outBallPrepareThread.start();
 
             }
+            if (gamepad2.right_trigger >= 0.2) {
+                shooterThread.start();
+            }
             if (servoUsing) servoControl();
             colorSensor();
+            motorControl();
             show();
         }
     }
@@ -117,21 +124,12 @@ public class MecanumWheel extends LinearOpMode {
 
         if (gamepad2.y) strikerServoPosition = 0.3;  //一键抬升
         if (gamepad2.a) strikerServoPosition = 0.6;  //一键下降
-/*
-        if(strikerServoPosition == 0.6){
-            if(gamepad2.x) rotateServoPosition = 0.5 - rotateServoSpeed;
-            if(gamepad2.b) rotateServoPosition = 0.5 + rotateServoSpeed;
-            if(!gamepad2.x && !gamepad2.b) rotateServoPosition = 0.5;
-        }else rotateServoPosition = 0.5;
-
- */
-        //robot.rotateServo.setPosition(rotateServoPosition);
         robot.strikerServo.setPosition(strikerServoPosition);
     }
 
     public void colorSensor() {
-        if (gamepad1.a) gain += 0.005;
-        else if (gamepad1.b && gain > 1) gain -= 0.005;
+        if (gamepad1.a) gain += 0.005F;
+        else if (gamepad1.b && gain > 1) gain -= 0.005F;
         robot.colorSensorLeft.setGain(gain);
         robot.colorSensorRight.setGain(gain);
 
@@ -150,6 +148,22 @@ public class MecanumWheel extends LinearOpMode {
             colorRight = "purple";
         else colorRight = "无";
     }
+    public void motorControl() {
+        if(!gamepad2.left_bumper && !gamepad2.right_bumper){
+            collectMotorPower = 0;
+        }
+        if(gamepad2.left_bumper){
+            collectMotorPower = 1;
+        }
+        if(gamepad2.right_bumper){
+            collectMotorPower = -1;
+        }
+        robot.collectMotor.setPower(collectMotorPower);
+        robot.shooterMotor1.setPower(shooterMotorPower);
+        robot.shooterMotor2.setPower(shooterMotorPower);
+
+    }
+
 
     public class Mecanum_1Thread extends Thread {
         public void run() {
@@ -223,7 +237,7 @@ public class MecanumWheel extends LinearOpMode {
             }
 
             if (b == 1) {
-                rotateMotorTargetPosition += step+20;//(288/3);
+                rotateMotorTargetPosition += step + 20;//(288/3);
             }
 
 
@@ -250,6 +264,15 @@ public class MecanumWheel extends LinearOpMode {
         }
 
     }
+    public class shooterThread extends Thread {
+        public void run() {
+            if (gamepad2.right_trigger >= 0.2) {
+                shooterMotorPower = 1;
+            } else {
+                shooterMotorPower = 0;
+            }
+        }
 
+    }
 }
 

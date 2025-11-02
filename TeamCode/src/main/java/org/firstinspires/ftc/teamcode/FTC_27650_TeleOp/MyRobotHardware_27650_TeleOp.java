@@ -16,8 +16,10 @@ public class MyRobotHardware_27650_TeleOp {
     public DcMotorEx bl = null;
 
     public DcMotorEx rotateMotor = null;
+    public DcMotorEx collectMotor = null;
+    public DcMotorEx shooterMotor1 = null;
+    public DcMotorEx shooterMotor2 = null;
 
-    //public Servo rotateServo = null;
     public Servo strikerServo = null;
 
     public NormalizedColorSensor colorSensorLeft;
@@ -39,8 +41,12 @@ public class MyRobotHardware_27650_TeleOp {
         bl = myOpMode.hardwareMap.get(DcMotorEx.class,"bl");//c3
 
         rotateMotor = myOpMode.hardwareMap.get(DcMotorEx.class,"rm");//e0
+        collectMotor = myOpMode.hardwareMap.get(DcMotorEx.class,"cm");//e1
+        shooterMotor1 = myOpMode.hardwareMap.get(DcMotorEx.class,"sm1");//e2
+        shooterMotor2 = myOpMode.hardwareMap.get(DcMotorEx.class,"sm2");//e3
 
-        //rotateServo = myOpMode.hardwareMap.get(Servo.class,"rs");//cs0
+
+
         strikerServo = myOpMode.hardwareMap.get(Servo.class,"ss");//cs1
 
         colorSensorLeft = myOpMode.hardwareMap.get(NormalizedColorSensor.class, "csl");//cI1
@@ -56,6 +62,9 @@ public class MyRobotHardware_27650_TeleOp {
         bl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         rotateMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        collectMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        shooterMotor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        shooterMotor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rotateMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rotateMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
@@ -66,6 +75,9 @@ public class MyRobotHardware_27650_TeleOp {
         br.setDirection(DcMotorSimple.Direction.REVERSE);
 
         rotateMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        collectMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+        shooterMotor1.setDirection(DcMotorSimple.Direction.FORWARD);
+        shooterMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
 
         //((SwitchableLight)colorSensorLeft).enableLight(true);
         //((SwitchableLight)colorSensorRight).enableLight(true);
