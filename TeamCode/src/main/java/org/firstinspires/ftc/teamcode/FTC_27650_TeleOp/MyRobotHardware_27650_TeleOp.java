@@ -28,7 +28,7 @@ public class MyRobotHardware_27650_TeleOp {
     public TouchSensor magnetic_out;
     public TouchSensor magnetic_in;
 
-    private LinearOpMode myOpMode = null;
+    private final LinearOpMode myOpMode;
     public MyRobotHardware_27650_TeleOp (LinearOpMode opmode) {
        myOpMode = opmode;
     }
@@ -79,8 +79,6 @@ public class MyRobotHardware_27650_TeleOp {
         shooterMotor1.setDirection(DcMotorSimple.Direction.FORWARD);
         shooterMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        //((SwitchableLight)colorSensorLeft).enableLight(true);
-        //((SwitchableLight)colorSensorRight).enableLight(true);
 
     }
 
