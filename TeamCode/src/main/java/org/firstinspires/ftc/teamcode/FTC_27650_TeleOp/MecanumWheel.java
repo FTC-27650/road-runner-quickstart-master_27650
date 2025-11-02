@@ -22,7 +22,11 @@ public class MecanumWheel extends LinearOpMode {
     public static double shooterMotorPower = 0;
     final float[] hsvValuesLeft = new float[3]; //左边色调
     final float[] hsvValuesRight = new float[3];//右边色调
-    private final ElapsedTime runtime = new ElapsedTime();
+
+    {
+        new ElapsedTime();
+    }
+
     public String colorLeft = "无";
     public String colorRight = "无";
     MyRobotHardware_27650_TeleOp robot = new MyRobotHardware_27650_TeleOp(this);
