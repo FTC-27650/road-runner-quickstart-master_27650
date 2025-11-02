@@ -34,8 +34,7 @@ public class MecanumWheel extends LinearOpMode {
     inBallPrepareThread inBallPrepareThread = new inBallPrepareThread();
     outBallPrepareThread outBallPrepareThread = new outBallPrepareThread();
     shooterThread shooterThread = new shooterThread();
-    //public static double rotateServoPosition = 0.5;//旋转模式舵机 0.5停止    0正着转   1反着转
-    //public static double rotateServoSpeed = 0.5; //  0 - 0.5 舵机旋转变快
+
     double strikerServoPosition = 0.6;//角度舵机    0.5代表转到中间
     boolean servoUsing = true;
     float gain = 2;//颜色传感器增益值，要>=1
@@ -106,9 +105,6 @@ public class MecanumWheel extends LinearOpMode {
         magnetic_out_bool = robot.magnetic_out.isPressed();
         magnetic_in_bool = robot.magnetic_in.isPressed();
 
-        //telemetry.addData("前轮 左/右","%4.2f, %4.2f", robot.fl.getPower(),robot.fr.getPower());
-        //telemetry.addData("后轮 左/右","%4.2f, %4.2f", robot.bl.getPower(),robot.br.getPower());
-        //telemetry.addData("旋转舵机","%4.2f", rotateServoPosition);
         telemetry.addData("向上抬球", "%4.2f", strikerServoPosition);
         telemetry.addData("Gain", gain);
         telemetry.addData("色调 左/右", "%.3f, %.3f", hsvValuesLeft[0], hsvValuesRight[0]);
