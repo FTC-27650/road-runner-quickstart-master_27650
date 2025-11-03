@@ -7,7 +7,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 
 @TeleOp(name = "手动27650")
@@ -23,9 +22,6 @@ public class MecanumWheel extends LinearOpMode {
     final float[] hsvValuesLeft = new float[3]; //左边色调
     final float[] hsvValuesRight = new float[3];//右边色调
 
-    {
-        new ElapsedTime();
-    }
 
     public String colorLeft = "无";
     public String colorRight = "无";
