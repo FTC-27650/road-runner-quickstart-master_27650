@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.FTC_27650_TeleOp;
 
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -18,8 +19,8 @@ public class MyRobotHardware_27650_TeleOp {
     public DcMotor bl = null;
 
     public DcMotor xiMotor = null;
-    public DcMotor flyWheelLeft = null;
-    public DcMotor flyWheelRight = null;
+    public DcMotorEx flyWheelLeft = null;
+    //public DcMotor flyWheelRight = null;
 
     public DcMotorEx rotateMotor = null;
 
@@ -30,11 +31,14 @@ public class MyRobotHardware_27650_TeleOp {
     public NormalizedColorSensor colorSensorLeft;
     public NormalizedColorSensor colorSensorRight;
 
-
     //public TouchSensor magnetic_out;
     public TouchSensor magnetic_in;
+
+    RevBlinkinLedDriver blinkinLedDriver;
+
     IMU imu;
-    private final LinearOpMode myOpMode;
+
+    private LinearOpMode myOpMode = null;
 
     public MyRobotHardware_27650_TeleOp(LinearOpMode opmode) {
         myOpMode = opmode;
@@ -47,24 +51,25 @@ public class MyRobotHardware_27650_TeleOp {
         br = myOpMode.hardwareMap.get(DcMotor.class, "br");//c2
         bl = myOpMode.hardwareMap.get(DcMotor.class, "bl");//c3
 
+        flyWheelLeft = myOpMode.hardwareMap.get(DcMotorEx.class, "fwl");//e0
 
         xiMotor = myOpMode.hardwareMap.get(DcMotor.class, "xm");//e2
-
-        flyWheelLeft = myOpMode.hardwareMap.get(DcMotor.class, "fwl");//e0
-        flyWheelRight = myOpMode.hardwareMap.get(DcMotor.class, "fwr");//e1
 
         rotateMotor = myOpMode.hardwareMap.get(DcMotorEx.class, "rm");//e3
 
         //rotateServo = myOpMode.hardwareMap.get(Servo.class,"rs");//cs0
-        strikerServo = myOpMode.hardwareMap.get(Servo.class, "ss");//cs1
+        strikerServo = myOpMode.hardwareMap.get(Servo.class, "ss");//cs0
 
-        colorSensorFront = myOpMode.hardwareMap.get(NormalizedColorSensor.class, "csf");//eI1
-        colorSensorLeft = myOpMode.hardwareMap.get(NormalizedColorSensor.class, "csl");//eI2
-        colorSensorRight = myOpMode.hardwareMap.get(NormalizedColorSensor.class, "csr");//eI3
+        colorSensorFront = myOpMode.hardwareMap.get(NormalizedColorSensor.class, "csf");//I2C 1
+        colorSensorLeft = myOpMode.hardwareMap.get(NormalizedColorSensor.class, "csl");//I2C  2
+        colorSensorRight = myOpMode.hardwareMap.get(NormalizedColorSensor.class, "csr");//I2C 3
 
         //magnetic_out = myOpMode.hardwareMap.get(TouchSensor.class,"mo");//ed0
         magnetic_in = myOpMode.hardwareMap.get(TouchSensor.class, "mi");//ed6
-        imu = myOpMode.hardwareMap.get(IMU.class, "imu");//I2C BUS0
+
+        blinkinLedDriver = myOpMode.hardwareMap.get(RevBlinkinLedDriver.class, "blinkin");//eservo0
+
+        imu = myOpMode.hardwareMap.get(IMU.class, "imu"); // c I2C 0
 
         //制动
         fl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -83,16 +88,23 @@ public class MyRobotHardware_27650_TeleOp {
         br.setDirection(DcMotorSimple.Direction.FORWARD);
 
         flyWheelLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-        flyWheelRight.setDirection(DcMotorSimple.Direction.FORWARD);
+        //flyWheelRight.setDirection(DcMotorSimple.Direction.FORWARD);
 
         rotateMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        //((SwitchableLight)colorSensorLeft).enableLight(true);
+        //((SwitchableLight)colorSensorRight).enableLight(true);
 
         RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;
         RevHubOrientationOnRobot.UsbFacingDirection usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.UP;
 
         RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
+
         imu.initialize(new IMU.Parameters(orientationOnRobot));
 
+        flyWheelLeft.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        flyWheelLeft.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        flyWheelLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
     }
 
