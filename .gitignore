@@ -23,6 +23,7 @@ out/
 # Gradle files
 .gradle/
 build/
+*/build/
 
 # Local configuration file (sdk path, etc)
 local.properties
@@ -41,6 +42,8 @@ captures/
 
 # IntelliJ
 *.iml
+*.ipr
+*.iws
 .idea/
 
 # For Mac users
@@ -80,5 +83,89 @@ lint/outputs/
 lint/tmp/
 # lint/reports/
 
-#.DS_Store
-/.idea
+# IDE temp files
+*.tmp
+*~
+.#*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Gradle-specific ignores
+.gradle/
+.gradle-*
+!gradle/wrapper/gradle-wrapper.properties
+!gradle/wrapper/gradle-wrapper.jar
+
+# Android-specific ignores
+captures/
+*.keystore
+*.jks
+
+# FTC-specific ignores
+# Flight recorder data files
+*.frd
+
+# Configuration files that may contain sensitive data
+**/config.xml
+**/settings.xml
+**/secrets.xml
+
+# User-specific files
+**/local.properties
+**/gradle.properties
+**/key.properties
+
+# Compiled files
+**/*.jar
+**/*.war
+**/*.zip
+
+# IDE files
+.vscode/
+*.swp
+*.swo
+
+# Build artifacts
+*/build/
+**/build/
+
+# Gradle cache
+.gradle/
+gradle/user-home/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Testing
+**/test-output/
+**/reports/
+**/target/
+
+# MeepMeep testing artifacts
+MeepMeepTesting/build/
+
+# TeamCode build
+TeamCode/build/
+
+# FtcRobotController build
+FtcRobotController/build/
+
+# Dependency cache
+**/caches/
+**/.gradle/
+
+# Flight recorder logs
+**/flightrecorder/
+**/flight_recorder/
+**/frd_files/
+**/*.frd
