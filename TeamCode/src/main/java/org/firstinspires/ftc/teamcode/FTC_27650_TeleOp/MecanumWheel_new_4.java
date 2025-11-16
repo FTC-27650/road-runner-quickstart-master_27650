@@ -10,12 +10,20 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
+
+import java.util.List;
 
 
 @TeleOp(name = "手动27650——new_4", group = "Linear Opmode")
 @Config
 public class MecanumWheel_new_4 extends LinearOpMode {
+    private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
     public static double strikerServoDownPosition = 0.55;//角度舵机    0.49代表转到中间
     public static double strikerServoUpPosition = 0.8;//角度舵机    0.49代表转到中间
     public static double greenMin = 140, greenMax = 195;
@@ -53,14 +61,23 @@ public class MecanumWheel_new_4 extends LinearOpMode {
     int c = 0;
     int g = 1;
     int p = 1;
-
     int step = 96;
     double flyWheelVelocity = 0;
+    /**
+     * The variable to store our instance of the AprilTag processor.
+     */
+    private AprilTagProcessor aprilTag;
+
+    /**
+     * The variable to store our instance of the vision portal.
+     */
+    private VisionPortal visionPortal;
 
     @Override
     public void runOpMode() {
 
         robot.init();
+        initAprilTag();
         robot.strikerServo.setPosition(strikerServoPosition);
         sleep(200);
         runtime.reset();
@@ -88,6 +105,49 @@ public class MecanumWheel_new_4 extends LinearOpMode {
         }
     }
 
+    private void initAprilTag() {
+
+        // Create the AprilTag processor the easy way.
+        aprilTag = AprilTagProcessor.easyCreateWithDefaults();
+
+        // Create the vision portal the easy way.
+        if (USE_WEBCAM) {
+            visionPortal = VisionPortal.easyCreateWithDefaults(hardwareMap.get(WebcamName.class, "Webcam 1"), aprilTag);
+        } else {
+            visionPortal = VisionPortal.easyCreateWithDefaults(BuiltinCameraDirection.BACK, aprilTag);
+        }
+
+    }   // end method initAprilTag()
+
+    /**
+     * Add telemetry about AprilTag detections.
+     */
+    private void telemetryAprilTag() {
+
+        List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+        telemetry.addData("# AprilTags Detected", currentDetections.size());
+
+        // Step through the list of detections and display info for each one.
+        for (AprilTagDetection detection : currentDetections) {
+            if (detection.metadata != null) {
+                telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
+                telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (英寸)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
+                telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (度)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
+                telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (英寸, 度, 度)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
+            } else {
+                telemetry.addLine(String.format("\n==== (ID %d) 未知", detection.id));
+                telemetry.addLine(String.format("中心 %6.0f %6.0f   (像素)", detection.center.x, detection.center.y));
+            }
+        }
+
+
+        // Add "key" information to telemetry
+        telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
+        telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
+        telemetry.addLine("RBE = Range, Bearing & Elevation");
+
+    }   // end method telemetryAprilTag()
+
     public void show() {
 
         magnetic_in_bool = robot.magnetic_in.isPressed();
@@ -108,6 +168,7 @@ public class MecanumWheel_new_4 extends LinearOpMode {
         telemetry.addData("g, p", "%d, %d", g, p);
         telemetry.addData("发射器转速", "%4.2f", flyWheelCurrentVelocity);
         telemetry.addData("gamepad2.fuck", "%4.2f", -gamepad2.right_stick_y);
+        telemetryAprilTag();
         telemetry.update();
     }
 
@@ -146,6 +207,7 @@ public class MecanumWheel_new_4 extends LinearOpMode {
         robot.br.setPower(brPower);
         robot.bl.setPower(blPower);
     }
+    // end method telemetryAprilTag()
 
     public void servoControl() {
 
@@ -363,7 +425,7 @@ public class MecanumWheel_new_4 extends LinearOpMode {
                 double MAX_FLYWHEEL_VELOCITY = 4000;
                 flyWheelCurrentVelocity = robot.flyWheelLeft.getVelocity();
                 flyWheelVelocity = -gamepad2.right_stick_y * MAX_FLYWHEEL_VELOCITY;
-                robot.flyWheelLeft.setVelocity(1500);
+                robot.flyWheelLeft.setVelocity(flyWheelVelocity);
 
 
             }
