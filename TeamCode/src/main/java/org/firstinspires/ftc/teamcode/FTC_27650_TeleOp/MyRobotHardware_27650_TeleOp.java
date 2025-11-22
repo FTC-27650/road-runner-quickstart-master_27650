@@ -20,12 +20,13 @@ public class MyRobotHardware_27650_TeleOp {
 
     public DcMotor xiMotor = null;
     public DcMotorEx flyWheelLeft = null;
-    //public DcMotor flyWheelRight = null;
+    public DcMotorEx flyWheelRight = null;
 
     public DcMotorEx rotateMotor = null;
 
-    //public Servo rotateServo = null;
     public Servo strikerServo = null;
+
+    public Servo angleServo = null;
 
     public NormalizedColorSensor colorSensorFront;
     public NormalizedColorSensor colorSensorLeft;
@@ -52,13 +53,15 @@ public class MyRobotHardware_27650_TeleOp {
         bl = myOpMode.hardwareMap.get(DcMotor.class, "bl");//c3
 
         flyWheelLeft = myOpMode.hardwareMap.get(DcMotorEx.class, "fwl");//e0
+        flyWheelRight = myOpMode.hardwareMap.get(DcMotorEx.class, "fwr");//e1
 
         xiMotor = myOpMode.hardwareMap.get(DcMotor.class, "xm");//e2
 
         rotateMotor = myOpMode.hardwareMap.get(DcMotorEx.class, "rm");//e3
 
-        //rotateServo = myOpMode.hardwareMap.get(Servo.class,"rs");//cs0
         strikerServo = myOpMode.hardwareMap.get(Servo.class, "ss");//cs0
+
+        angleServo = myOpMode.hardwareMap.get(Servo.class, "as");//es5
 
         colorSensorFront = myOpMode.hardwareMap.get(NormalizedColorSensor.class, "csf");//I2C 1
         colorSensorLeft = myOpMode.hardwareMap.get(NormalizedColorSensor.class, "csl");//I2C  2
@@ -88,12 +91,15 @@ public class MyRobotHardware_27650_TeleOp {
         br.setDirection(DcMotorSimple.Direction.FORWARD);
 
         flyWheelLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-        //flyWheelRight.setDirection(DcMotorSimple.Direction.FORWARD);
+        flyWheelRight.setDirection(DcMotorSimple.Direction.FORWARD);
 
         rotateMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
+        xiMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+
         //((SwitchableLight)colorSensorLeft).enableLight(true);
         //((SwitchableLight)colorSensorRight).enableLight(true);
+        //((SwitchableLight)colorSensorFront).enableLight(true);
 
         RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;
         RevHubOrientationOnRobot.UsbFacingDirection usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.UP;
@@ -103,9 +109,14 @@ public class MyRobotHardware_27650_TeleOp {
         imu.initialize(new IMU.Parameters(orientationOnRobot));
 
         flyWheelLeft.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        flyWheelRight.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         flyWheelLeft.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-        flyWheelLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        flyWheelRight.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
     }
 
+    public void rotateMotorEncoderRest() {
+        rotateMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rotateMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
 }

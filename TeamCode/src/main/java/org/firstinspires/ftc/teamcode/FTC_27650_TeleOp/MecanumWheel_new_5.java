@@ -4,9 +4,9 @@ import android.graphics.Color;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -20,54 +20,58 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.List;
 
 
-@TeleOp(name = "手动27650——new_4", group = "Linear Opmode")
+@TeleOp(name = "手动27650——new_3")
 @Config
-public class MecanumWheel_new_4 extends LinearOpMode {
-    private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
-    public static double strikerServoDownPosition = 0.55;//角度舵机    0.49代表转到中间
-    public static double strikerServoUpPosition = 0.8;//角度舵机    0.49代表转到中间
+@Disabled
+public class MecanumWheel_new_5 extends LinearOpMode {
+    private static final boolean USE_WEBCAM = true;
     public static double greenMin = 140, greenMax = 195;
     public static double purpleMin = 215, purpleMax = 260;
-    public static int rotateMotorOldTargetPosition = 0;
-    public static int rotateMotorTargetPosition = 0;
-    public static int rotateMotorMaxErrorPosition = 5;
-    public static double rotatePowerStart = 0.1;
-    public static double rotateMotorPower = 0;
-    public static double rotateMotorMinPower = 0.2;
-    public static double rotateMotorMaxPower = 0.8;
-    public static int errorPosition = 21;
+    public static int rotateMotorMaxErrorPosition = 2;
+    public static int errorPosition = 15;
+    public static double rotate_kp = 0.02, rotate_ki = 0.001, rotate_kd = 0.002, kf = 0;//0.0001;
+    public static double ki_max = 1000;
+    public static double flyWheelMaxVelocity = 3500;
     public static double xiMotorMinPower = 0;
-    public static double MAX_FLYWHEEL_VELOCITY = 4000;
-    public static double rotate_kp = 0, rotate_ki = 0, rotate_kd = 0, rotate_kf = 0;
-    public static double flyWheelTargetPosition = 0;
+    private static int greenFrontCount = 0, purpleFrontCount = 0;
+    private static int greenLeftCount = 0, purpleLeftCount = 0;
+    private static int greenRightCount = 0, purpleRightCount = 0;
     final float[] hsvValuesFront = new float[3]; // 1前面色调 2饱和度
     final float[] hsvValuesLeft = new float[3]; // 1左边色调 2饱和度
     final float[] hsvValuesRight = new float[3];// 1右边色调 2饱和度
     private final ElapsedTime runtime = new ElapsedTime();
-    public String colorFront = "无";
-    public String colorLeft = "无";
-    public String colorRight = "无";
     MyRobotHardware_27650_TeleOp robot = new MyRobotHardware_27650_TeleOp(this);
-    setRotateMotorPositionThread setRotateMotorPosition = new setRotateMotorPositionThread();
+    setRotateMotorPositionThread setRotateMotorPositionThread = new setRotateMotorPositionThread();
+    double strikerServoDownPosition = 0.55;//角度舵机    0.49代表转到中间
+    double strikerServoUpPosition = 0.85;//角度舵机    0.49代表转到中间
     double strikerServoPosition = strikerServoDownPosition;
+    double strikerServoSpeed = 0.005;
+    double angleServoPosition = 0; //初始化位置
+    double angleServoSpeed = 0.01;
+    boolean servoUsing = true;
     float gain = 3;//颜色传感器增益值，要>=1
-    boolean magnetic_out_bool = false;
+    volatile String colorFront = "无";
+    volatile String colorLeft = "无";
+    volatile String colorRight = "无";
     boolean magnetic_in_bool = false;
     int rotateMotorCurrentPosition = 0;
-    double kp = 0;
+    int rotateMotorOldTargetPosition = 0;
+    int rotateMotorTargetPosition = 0;
+    double rotatePowerStart = 0.1;
+    double rotateMotorPower = 0;
+    double rotateMotorMinPower = 0.1;
+    double rotateMotorMaxPower = 0.8;
     double flyWheelPower = 0;
+    volatile double flyWheelTargetPower = 0;
     double flyWheelCurrentVelocity = 0;
+    volatile double flyWheelTargetVelocity = 0;
     double xiMotorPower = 0;
-    int a = 1;
+    volatile int a = 1;
     int b = 1;
     int c = 0;
-    int g = 1;
+    volatile int g = 1;
     int p = 1;
     int step = 96;
-    double flyWheelVelocity = 0;
-    /**
-     * The variable to store our instance of the AprilTag processor.
-     */
     private AprilTagProcessor aprilTag;
 
     @Override
@@ -76,6 +80,7 @@ public class MecanumWheel_new_4 extends LinearOpMode {
         robot.init();
         initAprilTag();
         robot.strikerServo.setPosition(strikerServoPosition);
+        robot.angleServo.setPosition(angleServoPosition);
         sleep(200);
         runtime.reset();
         while (!robot.magnetic_in.isPressed() && runtime.seconds() <= 3) {
@@ -83,20 +88,27 @@ public class MecanumWheel_new_4 extends LinearOpMode {
         }
         robot.rotateMotor.setPower(0);
         sleep(200);
-        robot.rotateMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.rotateMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        rotateMotorTargetPosition = 0;
+        rotateMotorOldTargetPosition = 0;
+        gain = 3;
+
+        robot.rotateMotorEncoderRest();
+        sleep(300);
+        telemetry.addData("初始化：", "完毕");
+        telemetry.update();
 
         waitForStart();
 
-        setRotateMotorPosition.start();
+        setRotateMotorPositionThread.start();
         while (opModeIsActive()) {
-
             servoControl();
             colorSensor();
             Mecanum();
             flyWheelControl();
             xiMotor();
             ledControl();
+            telemetryAprilTag();
             show();
         }
     }
@@ -118,9 +130,6 @@ public class MecanumWheel_new_4 extends LinearOpMode {
 
     }   // end method initAprilTag()
 
-    /**
-     * Add telemetry about AprilTag detections.
-     */
     private void telemetryAprilTag() {
 
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
@@ -153,21 +162,20 @@ public class MecanumWheel_new_4 extends LinearOpMode {
 
         telemetry.addData("imu", "%4.2f", robot.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
         telemetry.addData("向上抬球", "%4.2f", strikerServoPosition);
+        telemetry.addData("射球角度", "%4.2f", angleServoPosition);
         telemetry.addData("Gain", gain);
         telemetry.addData("色调 前/左/右", "%.3f,%.3f, %.3f", hsvValuesFront[0], hsvValuesLeft[0], hsvValuesRight[0]);
         telemetry.addData("饱和度 前/左/右", "%.3f,%.3f, %.3f", hsvValuesFront[1], hsvValuesLeft[1], hsvValuesRight[1]);
         telemetry.addData("球颜色 前/左/右", "%s, %s, %s", colorFront, colorLeft, colorRight);
-        telemetry.addData("磁性限位开关 out/in", "%b, %b", magnetic_out_bool, magnetic_in_bool);
+        telemetry.addData("磁性限位开关 in", " %b", magnetic_in_bool);
         telemetry.addData("旋转功率", "%4.2f", rotateMotorPower);
         telemetry.addData("旋转位置", "%7d", rotateMotorCurrentPosition);
         telemetry.addData("目标位置 old/new/差值", "%7d ,%7d, %7d", rotateMotorOldTargetPosition, rotateMotorTargetPosition, rotateMotorTargetPosition - rotateMotorOldTargetPosition);
-        telemetry.addData("飞轮功率/转速", "%4.2f, %4.2f", flyWheelPower, robot.flyWheelLeft.getVelocity());
+        telemetry.addData("左飞轮功率/转速", "%4.2f, %4.2f", robot.flyWheelLeft.getPower(), robot.flyWheelLeft.getVelocity());
+        telemetry.addData("右飞轮功率/转速", "%4.2f, %4.2f", robot.flyWheelRight.getPower(), robot.flyWheelRight.getVelocity());
         telemetry.addData("旋吸功率", "%4.2f", xiMotorPower);
-        telemetry.addData("a,b,c,kp", "%d ,%d, %d, %4.2f", a, b, c, kp);
+        telemetry.addData("a,b,c,kp", "%d ,%d, %d, %4.2f", a, b, c, rotate_kp);
         telemetry.addData("g, p", "%d, %d", g, p);
-        telemetry.addData("发射器转速", "%4.2f", flyWheelCurrentVelocity);
-        telemetry.addData("gamepad2.fuck", "%4.2f", -gamepad2.right_stick_y);
-        telemetryAprilTag();
         telemetry.update();
     }
 
@@ -194,10 +202,10 @@ public class MecanumWheel_new_4 extends LinearOpMode {
         double brPower = (rotY + rotX - rx) / denominator;
 
         if (gamepad1.left_bumper) {
-            flPower = flPower * 0.7;
-            frPower = frPower * 0.7;
-            brPower = brPower * 0.7;
-            blPower = blPower * 0.7;
+            flPower = flPower * 0.6;
+            frPower = frPower * 0.6;
+            brPower = brPower * 0.6;
+            blPower = blPower * 0.6;
 
         }
 
@@ -206,20 +214,25 @@ public class MecanumWheel_new_4 extends LinearOpMode {
         robot.br.setPower(brPower);
         robot.bl.setPower(blPower);
     }
-    // end method telemetryAprilTag()
 
     public void servoControl() {
-
-
+        //if(gamepad2.dpad_up) strikerServoPosition = Math.min(strikerServoPosition + strikerServoSpeed,1);
+        //if(gamepad2.dpad_down) strikerServoPosition = Math.max(strikerServoPosition - strikerServoSpeed,0);
         if (gamepad2.dpad_up) strikerServoPosition = strikerServoUpPosition;  //一键抬升
         if (gamepad2.dpad_down) strikerServoPosition = strikerServoDownPosition;  //一键下降
 
+        if (gamepad1.dpad_up)
+            angleServoPosition = Math.min(angleServoPosition + angleServoSpeed, 1);
+        if (gamepad1.dpad_down)
+            angleServoPosition = Math.max(angleServoPosition - angleServoSpeed, 0);
+
         robot.strikerServo.setPosition(strikerServoPosition);
+        robot.angleServo.setPosition(angleServoPosition);
     }
 
     public void colorSensor() {
-        if (gamepad1.a) gain += 0.005F;
-        else if (gamepad1.b && gain > 1) gain -= 0.005F;
+        if (gamepad1.a) gain += 0.005;
+        else if (gamepad1.b && gain > 1) gain -= 0.005;
         robot.colorSensorFront.setGain(gain);
         robot.colorSensorLeft.setGain(gain);
         robot.colorSensorRight.setGain(gain);
@@ -232,32 +245,58 @@ public class MecanumWheel_new_4 extends LinearOpMode {
         Color.colorToHSV(colorsLeft.toColor(), hsvValuesLeft);
         Color.colorToHSV(colorsRight.toColor(), hsvValuesRight);
 
-        //前边颜色传感器
-        if ((greenMin <= hsvValuesFront[0] && hsvValuesFront[0] <= greenMax) && hsvValuesFront[1] != 1)
-            colorFront = "green";
-        else if ((purpleMin <= hsvValuesFront[0] && hsvValuesFront[0] <= purpleMax) && hsvValuesFront[1] != 1)
-            colorFront = "purple";
-        else colorFront = "无";
+        // 前边颜色传感器
+        if ((greenMin <= hsvValuesFront[0] && hsvValuesFront[0] <= greenMax) && hsvValuesFront[1] > 0.2) { // 增加饱和度阈值
+            greenFrontCount++;
+            purpleFrontCount = 0;
+        } else if ((purpleMin <= hsvValuesFront[0] && hsvValuesFront[0] <= purpleMax) && hsvValuesFront[1] > 0.2) {
+            purpleFrontCount++;
+            greenFrontCount = 0;
+        } else {
+            greenFrontCount = 0;
+            purpleFrontCount = 0;
+        }
+        // 连续3次识别一致才确认
+        colorFront = (greenFrontCount >= 3) ? "green" : (purpleFrontCount >= 3) ? "purple" : "无";
 
-        //左边颜色传感器
-        if ((greenMin <= hsvValuesLeft[0] && hsvValuesLeft[0] <= greenMax) && hsvValuesLeft[1] != 1)
-            colorLeft = "green";
-        else if ((purpleMin <= hsvValuesLeft[0] && hsvValuesLeft[0] <= purpleMax) && hsvValuesLeft[1] != 1)
-            colorLeft = "purple";
-        else colorLeft = "无";
+        // 左边颜色传感器
+        if ((greenMin <= hsvValuesLeft[0] && hsvValuesLeft[0] <= greenMax) && hsvValuesLeft[1] > 0.2) { // 增加饱和度阈值
+            greenLeftCount++;
+            purpleLeftCount = 0;
+        } else if ((purpleMin <= hsvValuesLeft[0] && hsvValuesLeft[0] <= purpleMax) && hsvValuesLeft[1] > 0.2) {
+            purpleLeftCount++;
+            greenLeftCount = 0;
+        } else {
+            greenLeftCount = 0;
+            purpleLeftCount = 0;
+        }
+        // 连续3次识别一致才确认
+        colorLeft = (greenLeftCount >= 3) ? "green" : (purpleLeftCount >= 3) ? "purple" : "无";
 
         //右边颜色传感器
-        if ((greenMin <= hsvValuesRight[0] && hsvValuesRight[0] <= greenMax) && hsvValuesRight[1] != 1)
-            colorRight = "green";
-        else if ((purpleMin <= hsvValuesRight[0] && hsvValuesRight[0] <= purpleMax) && hsvValuesRight[1] != 1)
-            colorRight = "purple";
-        else colorRight = "无";
+        if ((greenMin <= hsvValuesRight[0] && hsvValuesRight[0] <= greenMax) && hsvValuesRight[1] > 0.2) { // 增加饱和度阈值
+            greenRightCount++;
+            purpleRightCount = 0;
+        } else if ((purpleMin <= hsvValuesRight[0] && hsvValuesRight[0] <= purpleMax) && hsvValuesRight[1] > 0.2) {
+            purpleRightCount++;
+            greenRightCount = 0;
+        } else {
+            greenRightCount = 0;
+            purpleRightCount = 0;
+        }
+        // 连续3次识别一致才确认
+        colorRight = (greenRightCount >= 3) ? "green" : (purpleRightCount >= 3) ? "purple" : "无";
     }
 
+    //飞轮线程 gamepad2.right_stick_y 控制飞轮
     public void flyWheelControl() {
-        //飞轮线程 gamepad2.right_stick_y 控制飞轮
-        /* flyWheelCurrentVelocity = robot.flyWheelLeft.getVelocity(); **/
+        //flyWheelPower = (-gamepad2.right_stick_y + flyWheelTargetPower);
+        //robot.flyWheelLeft.setPower(flyWheelPower);
+        //robot.flyWheelRight.setPower(flyWheelPower);
+
+        double flyWheelVelocity = -gamepad2.right_stick_y * flyWheelMaxVelocity + flyWheelTargetVelocity;
         robot.flyWheelLeft.setVelocity(flyWheelVelocity);
+        robot.flyWheelRight.setVelocity(flyWheelVelocity);
     }
 
     //gamepad2.left_stick_y 控制吸轮
@@ -265,7 +304,6 @@ public class MecanumWheel_new_4 extends LinearOpMode {
         xiMotorPower = -gamepad2.left_stick_y + xiMotorMinPower;
         robot.xiMotor.setPower(xiMotorPower);
     }
-
 
     //彩灯程序
     public void ledControl() {
@@ -280,6 +318,32 @@ public class MecanumWheel_new_4 extends LinearOpMode {
 
     // 操控手2的按键控制程序
     public void buttonControlRotateMotor() {
+        if (gamepad2.y) {
+            while (gamepad2.y) {
+                sleep(10);
+            }
+            flyWheelTargetVelocity += 50;
+        }
+        if (gamepad2.a) {
+            while (gamepad2.a) {
+                sleep(10);
+            }
+            flyWheelTargetVelocity -= 50;
+        }
+        if (gamepad2.x) {
+            while (gamepad2.x) {
+                sleep(10);
+            }
+            flyWheelTargetVelocity = 0;
+        }
+        if (gamepad2.b) {
+            while (gamepad2.b) {
+                sleep(10);
+            }
+            flyWheelTargetVelocity = 1700;
+        }
+
+
         //控制进球转到下一步
         if (gamepad2.left_bumper) {
             rotateMotorOldTargetPosition = rotateMotorTargetPosition;
@@ -363,10 +427,20 @@ public class MecanumWheel_new_4 extends LinearOpMode {
             }
             robot.rotateMotor.setPower(0);
             sleep(200);
-            robot.rotateMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.rotateMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            robot.rotateMotorEncoderRest();
             rotateMotorTargetPosition = 0;
-            sleep(200);
+            rotateMotorOldTargetPosition = 0;
+            a = 1;
+            c = 0;
+            b = 1;
+            g = 1;
+            p = 1;
+            sleep(500);  // 等待复位完成
+            if (robot.rotateMotor.getCurrentPosition() != 0) {
+                telemetry.addData("编码器复位失败", "请检查电机");
+                telemetry.update();
+                sleep(2000);
+            }
         }
     }
 
@@ -377,19 +451,41 @@ public class MecanumWheel_new_4 extends LinearOpMode {
                 double old_error = 0;
                 double kd = 0;
                 double ki = 0;
+                // 在setRotateMotorPositionThread中使用固定周期控制
+                ElapsedTime loopTimer = new ElapsedTime();
+                final double loopPeriod = 0.01; // 10ms周期
                 while (opModeIsActive()) {
+
+                    double dt = loopTimer.seconds();
+                    loopTimer.reset();
 
                     buttonControlRotateMotor();
 
                     rotateMotorCurrentPosition = robot.rotateMotor.getCurrentPosition();
-                    rotateMotorPower = (rotateMotorTargetPosition - rotateMotorCurrentPosition) * kp;
-                    if (rotateMotorPower > 0)
-                        rotateMotorPower = Math.max(rotateMotorMinPower, Math.min(rotateMotorPower, rotateMotorMaxPower));
-                    if (rotateMotorPower < 0)
-                        rotateMotorPower = Math.min(-rotateMotorMinPower, Math.max(rotateMotorPower, -rotateMotorMaxPower));
+
+                    error = rotateMotorTargetPosition - rotateMotorCurrentPosition;
+                    ki += error * dt;
+                    // 误差过小时清除积分（避免静态误差累积）
+                    if (Math.abs(error) < rotateMotorMaxErrorPosition * 2) ki = 0;
+                    ki = Math.max(-ki_max, Math.min(ki, ki_max));  // 根据实际情况调整上下限
+                    kd = (error - old_error) / dt;
+                    rotateMotorPower = error * rotate_kp + ki * rotate_ki + kd * rotate_kd + rotateMotorTargetPosition * kf;
+
+                    double targetPower = error * rotate_kp + ki * rotate_ki + kd * rotate_kd + rotateMotorTargetPosition * kf;
+
+                    if (Math.abs(error) < 48) { // 接近目标时（阈值根据实际调整）
+                        rotateMotorPower = Math.max(-0.3, Math.min(targetPower, 0.3)); // 降低最大功率
+                    } else {
+                        rotateMotorPower = Math.max(-rotateMotorMaxPower, Math.min(targetPower, rotateMotorMaxPower));
+                    }
+                    if (Math.abs(rotateMotorPower) < rotateMotorMinPower && Math.abs(error) > rotateMotorMaxErrorPosition) {
+                        rotateMotorPower = Math.signum(rotateMotorPower) * rotateMotorMinPower;
+                    }
 
                     if (b == 2 && Math.abs(rotateMotorCurrentPosition - rotateMotorTargetPosition) <= rotateMotorMaxErrorPosition) {
                         rotateMotorPower = 0;
+                        robot.rotateMotor.setPower(rotateMotorPower);
+                        sleep(300);
                         if ((colorFront.equals("green") || colorFront.equals("purple")) && c < 3) {
                             rotateMotorTargetPosition += step;//(288/3);
                             c += 1;
@@ -401,14 +497,14 @@ public class MecanumWheel_new_4 extends LinearOpMode {
                     } else if (g == 2 && Math.abs(rotateMotorCurrentPosition - rotateMotorTargetPosition) <= rotateMotorMaxErrorPosition) {
                         rotateMotorPower = 0;
                         robot.rotateMotor.setPower(rotateMotorPower);
-                        sleep(100);
+                        sleep(150);
                         if (colorLeft.equals("green") || colorRight.equals("green")) {
                             g = 1;
                         } else rotateMotorTargetPosition += step;//(288/3);
                     } else if (p == 2 && Math.abs(rotateMotorCurrentPosition - rotateMotorTargetPosition) <= rotateMotorMaxErrorPosition) {
                         rotateMotorPower = 0;
                         robot.rotateMotor.setPower(rotateMotorPower);
-                        sleep(100);
+                        sleep(150);
                         if (colorLeft.equals("purple") || colorRight.equals("purple")) {
                             p = 1;
                         } else rotateMotorTargetPosition += step;//(288/3);
@@ -417,8 +513,16 @@ public class MecanumWheel_new_4 extends LinearOpMode {
                             rotateMotorPower = 0;
                         }
                     }
+
                     robot.rotateMotor.setPower(rotateMotorPower);
-                    sleep(10);
+                    old_error = error;
+
+                    sleep(Math.max(0, 10 - (long) (dt * 1000)));  // 确保总周期约10ms
+                    // 确保周期稳定（补全不足的时间）
+                    double elapsed = loopTimer.seconds();
+                    if (elapsed < loopPeriod) {
+                        sleep((long) ((loopPeriod - elapsed) * 1000));
+                    }
                 }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
