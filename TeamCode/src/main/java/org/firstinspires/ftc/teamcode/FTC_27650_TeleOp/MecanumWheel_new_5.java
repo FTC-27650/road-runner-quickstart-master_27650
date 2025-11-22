@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.FTC_27650_TeleOp;
 
+import android.annotation.SuppressLint;
 import android.graphics.Color;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -45,10 +46,8 @@ public class MecanumWheel_new_5 extends LinearOpMode {
     double strikerServoDownPosition = 0.55;//角度舵机    0.49代表转到中间
     double strikerServoUpPosition = 0.85;//角度舵机    0.49代表转到中间
     double strikerServoPosition = strikerServoDownPosition;
-    double strikerServoSpeed = 0.005;
     double angleServoPosition = 0; //初始化位置
     double angleServoSpeed = 0.01;
-    boolean servoUsing = true;
     float gain = 3;//颜色传感器增益值，要>=1
     volatile String colorFront = "无";
     volatile String colorLeft = "无";
@@ -61,9 +60,6 @@ public class MecanumWheel_new_5 extends LinearOpMode {
     double rotateMotorPower = 0;
     double rotateMotorMinPower = 0.1;
     double rotateMotorMaxPower = 0.8;
-    double flyWheelPower = 0;
-    volatile double flyWheelTargetPower = 0;
-    double flyWheelCurrentVelocity = 0;
     volatile double flyWheelTargetVelocity = 0;
     double xiMotorPower = 0;
     volatile int a = 1;
@@ -130,6 +126,7 @@ public class MecanumWheel_new_5 extends LinearOpMode {
 
     }   // end method initAprilTag()
 
+    @SuppressLint("DefaultLocale")
     private void telemetryAprilTag() {
 
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
@@ -216,8 +213,6 @@ public class MecanumWheel_new_5 extends LinearOpMode {
     }
 
     public void servoControl() {
-        //if(gamepad2.dpad_up) strikerServoPosition = Math.min(strikerServoPosition + strikerServoSpeed,1);
-        //if(gamepad2.dpad_down) strikerServoPosition = Math.max(strikerServoPosition - strikerServoSpeed,0);
         if (gamepad2.dpad_up) strikerServoPosition = strikerServoUpPosition;  //一键抬升
         if (gamepad2.dpad_down) strikerServoPosition = strikerServoDownPosition;  //一键下降
 
@@ -231,8 +226,8 @@ public class MecanumWheel_new_5 extends LinearOpMode {
     }
 
     public void colorSensor() {
-        if (gamepad1.a) gain += 0.005;
-        else if (gamepad1.b && gain > 1) gain -= 0.005;
+        if (gamepad1.a) gain += 0.005F;
+        else if (gamepad1.b && gain > 1) gain -= 0.005F;
         robot.colorSensorFront.setGain(gain);
         robot.colorSensorLeft.setGain(gain);
         robot.colorSensorRight.setGain(gain);
@@ -290,9 +285,6 @@ public class MecanumWheel_new_5 extends LinearOpMode {
 
     //飞轮线程 gamepad2.right_stick_y 控制飞轮
     public void flyWheelControl() {
-        //flyWheelPower = (-gamepad2.right_stick_y + flyWheelTargetPower);
-        //robot.flyWheelLeft.setPower(flyWheelPower);
-        //robot.flyWheelRight.setPower(flyWheelPower);
 
         double flyWheelVelocity = -gamepad2.right_stick_y * flyWheelMaxVelocity + flyWheelTargetVelocity;
         robot.flyWheelLeft.setVelocity(flyWheelVelocity);
@@ -447,9 +439,9 @@ public class MecanumWheel_new_5 extends LinearOpMode {
     public class setRotateMotorPositionThread extends Thread {
         public void run() {
             try {
-                double error = 0;
+                double error;
                 double old_error = 0;
-                double kd = 0;
+                double kd;
                 double ki = 0;
                 // 在setRotateMotorPositionThread中使用固定周期控制
                 ElapsedTime loopTimer = new ElapsedTime();

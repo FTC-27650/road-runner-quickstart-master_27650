@@ -256,7 +256,7 @@ public class MecanumWheel_new_4 extends LinearOpMode {
 
     public void flyWheelControl() {
         //飞轮线程 gamepad2.right_stick_y 控制飞轮
-        /* flyWheelCurrentVelocity = robot.flyWheelLeft.getVelocity(); **/
+
         robot.flyWheelLeft.setVelocity(flyWheelVelocity);
     }
 
