@@ -4,6 +4,7 @@ import android.graphics.Color;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -22,6 +23,7 @@ import java.util.List;
 
 @TeleOp(name = "手动27650——new_4", group = "Linear Opmode")
 @Config
+@Disabled
 public class MecanumWheel_new_4 extends LinearOpMode {
     private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
     public static double strikerServoDownPosition = 0.55;//角度舵机    0.49代表转到中间

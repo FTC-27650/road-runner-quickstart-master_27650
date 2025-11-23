@@ -5,7 +5,6 @@ import android.graphics.Color;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
@@ -21,11 +20,11 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.List;
 
 
-@TeleOp(name = "手动27650——new_3")
+@TeleOp(name = "手动27650——new_3", group = "LinearOpmode")
 @Config
-@Disabled
+
 public class MecanumWheel_new_5 extends LinearOpMode {
-    private static final boolean USE_WEBCAM = true;
+
     public static double greenMin = 140, greenMax = 195;
     public static double purpleMin = 215, purpleMax = 260;
     public static int rotateMotorMaxErrorPosition = 2;
@@ -43,6 +42,7 @@ public class MecanumWheel_new_5 extends LinearOpMode {
     private final ElapsedTime runtime = new ElapsedTime();
     MyRobotHardware_27650_TeleOp robot = new MyRobotHardware_27650_TeleOp(this);
     setRotateMotorPositionThread setRotateMotorPositionThread = new setRotateMotorPositionThread();
+    camera cameraThread = new camera();
     double strikerServoDownPosition = 0.55;//角度舵机    0.49代表转到中间
     double strikerServoUpPosition = 0.85;//角度舵机    0.49代表转到中间
     double strikerServoPosition = strikerServoDownPosition;
@@ -68,13 +68,12 @@ public class MecanumWheel_new_5 extends LinearOpMode {
     volatile int g = 1;
     int p = 1;
     int step = 96;
-    private AprilTagProcessor aprilTag;
+
 
     @Override
     public void runOpMode() {
 
         robot.init();
-        initAprilTag();
         robot.strikerServo.setPosition(strikerServoPosition);
         robot.angleServo.setPosition(angleServoPosition);
         sleep(200);
@@ -95,7 +94,7 @@ public class MecanumWheel_new_5 extends LinearOpMode {
         telemetry.update();
 
         waitForStart();
-
+        cameraThread.start();
         setRotateMotorPositionThread.start();
         while (opModeIsActive()) {
             servoControl();
@@ -104,54 +103,11 @@ public class MecanumWheel_new_5 extends LinearOpMode {
             flyWheelControl();
             xiMotor();
             ledControl();
-            telemetryAprilTag();
+            //telemetryAprilTag();
             show();
         }
     }
 
-    private void initAprilTag() {
-
-        // Create the AprilTag processor the easy way.
-        aprilTag = AprilTagProcessor.easyCreateWithDefaults();
-
-        // Create the vision portal the easy way.
-        /*
-          The variable to store our instance of the vision portal.
-         */
-        if (USE_WEBCAM) {
-            VisionPortal.easyCreateWithDefaults(hardwareMap.get(WebcamName.class, "Webcam 1"), aprilTag);
-        } else {
-            VisionPortal.easyCreateWithDefaults(BuiltinCameraDirection.BACK, aprilTag);
-        }
-
-    }   // end method initAprilTag()
-
-    @SuppressLint("DefaultLocale")
-    private void telemetryAprilTag() {
-
-        List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-        telemetry.addData("# AprilTags Detected", currentDetections.size());
-
-        // Step through the list of detections and display info for each one.
-        for (AprilTagDetection detection : currentDetections) {
-            if (detection.metadata != null) {
-                telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
-                telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (英寸)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
-                telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (度)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
-                telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (英寸, 度, 度)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
-            } else {
-                telemetry.addLine(String.format("\n==== (ID %d) 未知", detection.id));
-                telemetry.addLine(String.format("中心 %6.0f %6.0f   (像素)", detection.center.x, detection.center.y));
-            }
-        }
-
-
-        // Add "key" information to telemetry
-        telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
-        telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
-        telemetry.addLine("RBE = Range, Bearing & Elevation");
-
-    }   // end method telemetryAprilTag()
 
     public void show() {
 
@@ -522,5 +478,191 @@ public class MecanumWheel_new_5 extends LinearOpMode {
         }
     }
 
+    public class camera extends Thread {
+        private static final boolean USE_WEBCAM = true;
+        private AprilTagProcessor aprilTag;
+        /**
+         * The variable to store our instance of the vision portal.
+         */
+        private VisionPortal visionPortal;
+        private boolean streamingStopped = false;
+
+        public void run() {
+
+            initAprilTag();
+
+            // 不在子线程调用 waitForStart()，避免与主线程冲突
+
+            while (opModeIsActive()) {
+
+                telemetryAprilTag();
+                telemetry.update();
+
+                // 安全地控制流（避免重复调用或者在 visionPortal 为 null 时崩溃）
+                if (visionPortal != null) {
+                    try {
+                        if (gamepad1.x && !streamingStopped) {
+                            visionPortal.resumeStreaming();
+                            streamingStopped = true;
+                        } else if (gamepad1.y && streamingStopped) {
+                            visionPortal.stopStreaming();
+                            streamingStopped = false;
+                        }
+                    } catch (Exception e) {
+                        // 捕获并在 telemetry 显示，避免线程直接终止
+                        telemetry.addData("Vision error", e.getMessage());
+                        telemetry.update();
+                    }
+                }
+
+                try {
+                    sleep(20);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+            }
+
+            if (visionPortal != null) {
+                try {
+                    visionPortal.close();
+                } catch (Exception ignored) {
+                }
+            }
+        }
+
+        @SuppressLint("DefaultLocale")
+        public void telemetryAprilTag() {
+
+            // Get detections and report count.
+            // 获取当前检测列表并显示数量。
+            List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+            telemetry.addData("# AprilTags Detected", currentDetections.size());
+
+            // Step through the list of detections and display info for each one.
+            // 遍历检测列表并为每个检测项显示信息。
+            for (AprilTagDetection detection : currentDetections) {
+                if (detection.metadata != null) {
+                    // If metadata available, show ID, name and pose in FTC coordinate units.
+                    // 如果存在元数据，显示 ID、元数据名称和 FTC 坐标系下位姿信息。
+                    telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
+                    telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (英寸)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
+                    telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (度)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
+                    telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (英寸, 度, 度)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
+                } else {
+                    // If no metadata, report ID as unknown and show detection center in pixels.
+                    // 如果没有元数据，则将 ID 标记为“未知”，并显示检测框中心像素坐标。
+                    telemetry.addLine(String.format("\n==== (ID %d) 未知", detection.id));
+                    telemetry.addLine(String.format("中心 %6.0f %6.0f   (像素)", detection.center.x, detection.center.y));
+                }
+
+
+            }
+
+
+            // Add "key" information to telemetry
+            // 在 telemetry 中添加说明键，解释各字段含义。
+            telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
+            telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
+            telemetry.addLine("RBE = Range, Bearing & Elevation");
+
+        }
+
+        // end method initAprilTag()
+        public void initAprilTag() {
+
+            // Create the AprilTag processor.
+            // 创建 AprilTag 处理器实例。
+            aprilTag = new AprilTagProcessor.Builder()
+
+                    // The following default settings are available to un-comment and edit as needed.
+                    // 以下为可选默认设置（按需取消注释并修改）。
+                    //.setDrawAxes(false) // 是否绘制坐标轴
+                    //.setDrawCubeProjection(false) // 是否绘制立方体投影
+                    //.setDrawTagOutline(true) // 是否绘制标签轮廓
+                    //.setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11) // 标签族选择
+                    //.setTagLibrary(AprilTagGameDatabase.getCenterStageTagLibrary()) // 使用的标签库
+                    //.setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES) // 输出单位设置
+
+                    // == CAMERA CALIBRATION ==
+                    // If you do not manually specify calibration parameters, the SDK will attempt
+                    // to load a predefined calibration for your camera.
+                    // 如果不手动指定相机内参，SDK 将尝试加载预定义的相机标定参数。
+                    //.setLensIntrinsics(578.272, 578.272, 402.145, 221.506)
+                    // ... these parameters are fx, fy, cx, cy.
+                    // ... 这些参数分别为 fx, fy, cx, cy。
+
+                    .build();
+
+            // Adjust Image Decimation to trade-off detection-range for detection-rate.
+            // 调整图像降采样以在检测距离与检测率之间做权衡。
+            // eg: Some typical detection data using a Logitech C920 WebCam
+            // 例如：使用 Logitech C920 的典型检测数据
+            // Decimation = 1 ..  Detect 2" Tag from 10 feet away at 10 Frames per second
+            // Decimation = 2 ..  Detect 2" Tag from 6  feet away at 22 Frames per second
+            // Decimation = 3 ..  Detect 2" Tag from 4  feet away at 30 Frames Per Second (default)
+            // Decimation = 3 ..  Detect 5" Tag from 10 feet away at 30 Frames Per Second (default)
+            // Note: Decimation can be changed on-the-fly to adapt during a match.
+            // 注意：可在运行时动态调整降采样以适配比赛需求。
+            //aprilTag.setDecimation(3);
+
+            // Create the vision portal by using a builder.
+            // 使用构建器创建 VisionPortal（视觉入口）。
+            VisionPortal.Builder builder = new VisionPortal.Builder();
+
+            // Set the camera (webcam vs. built-in RC phone camera).
+            // 设置相机（外接 webcam 或 内置 RC 手机相机）。
+            if (USE_WEBCAM) {
+                builder.setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"));
+            } else {
+                builder.setCamera(BuiltinCameraDirection.BACK);
+            }
+
+            // 选择相机分辨率。并非所有相机都支持所有分辨率。
+            //builder.setCameraResolution(new Size(640, 480));
+
+            // 启用 RC 预览（LiveView）。将其设为 false 可省略相机监视。
+            // Enable RC preview (LiveView). Set false to skip camera monitor.
+            builder.enableLiveView(true);
+
+            // 设置流格式；MJPEG 相比默认的 YUY2 使用更少带宽。
+            // Set stream format; MJPEG uses less bandwidth than default YUY2 in some cases.
+            builder.setStreamFormat(VisionPortal.StreamFormat.YUY2);
+
+            // 选择当没有处理器启用时 LiveView 是否停止。
+            // 如果设为 true，当没有处理器启用时监视器将显示纯橙色屏幕。
+            // 如果设为 false，监视器在没有处理器启用时显示相机视图。
+            // Choose whether LiveView stops when no processor is enabled.
+            builder.setAutoStopLiveView(false);
+
+            // Set and enable the processor.
+            // 添加并启用 AprilTag 处理器。
+            builder.addProcessor(aprilTag);
+
+            // Build the Vision Portal, using the above settings.
+            // 使用上述设置构建 VisionPortal 实例。
+            visionPortal = builder.build();
+
+            // Disable or re-enable the aprilTag processor at any time.
+            // 可随时禁用或重新启用 aprilTag 处理器。
+            //visionPortal.setProcessorEnabled(aprilTag, true);
+
+        }
+
+
+    }
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
