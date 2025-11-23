@@ -485,7 +485,7 @@ public class MecanumWheel_new_5 extends LinearOpMode {
          * The variable to store our instance of the vision portal.
          */
         private VisionPortal visionPortal;
-        private boolean streamingStopped = false;
+        private boolean streamingStopped = true;
 
         public void run() {
 
@@ -502,10 +502,10 @@ public class MecanumWheel_new_5 extends LinearOpMode {
                 if (visionPortal != null) {
                     try {
                         if (gamepad1.x && !streamingStopped) {
-                            visionPortal.resumeStreaming();
+                            visionPortal.stopStreaming();
                             streamingStopped = true;
                         } else if (gamepad1.y && streamingStopped) {
-                            visionPortal.stopStreaming();
+                            visionPortal.resumeStreaming();
                             streamingStopped = false;
                         }
                     } catch (Exception e) {
