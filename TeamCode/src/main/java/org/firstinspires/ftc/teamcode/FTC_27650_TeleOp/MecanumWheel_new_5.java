@@ -103,8 +103,8 @@ public class MecanumWheel_new_5 extends LinearOpMode {
             flyWheelControl();
             xiMotor();
             ledControl();
-            //telemetryAprilTag();
-            show();
+
+            //show();
         }
     }
 
@@ -131,6 +131,9 @@ public class MecanumWheel_new_5 extends LinearOpMode {
         telemetry.addData("g, p", "%d, %d", g, p);
         telemetry.update();
     }
+
+    @SuppressLint("DefaultLocale")
+
 
     public void Mecanum() {
         double y = -gamepad1.left_stick_y;
@@ -479,13 +482,13 @@ public class MecanumWheel_new_5 extends LinearOpMode {
     }
 
     public class camera extends Thread {
-        private static final boolean USE_WEBCAM = true;
-        private AprilTagProcessor aprilTag;
+        public static final boolean USE_WEBCAM = true;
+        public AprilTagProcessor aprilTag;
         /**
          * The variable to store our instance of the vision portal.
          */
-        private VisionPortal visionPortal;
-        private boolean streamingStopped = true;
+        public VisionPortal visionPortal;
+        public boolean streamingStopped = true;
 
         public void run() {
 
@@ -501,15 +504,16 @@ public class MecanumWheel_new_5 extends LinearOpMode {
                 // 安全地控制流（避免重复调用或者在 visionPortal 为 null 时崩溃）
                 if (visionPortal != null) {
                     try {
-                        if (gamepad1.x && !streamingStopped) {
-                            visionPortal.stopStreaming();
-                            streamingStopped = true;
-                        } else if (gamepad1.y && streamingStopped) {
-                            visionPortal.resumeStreaming();
-                            streamingStopped = false;
+                        if (gamepad1.x) {
+                            visionPortal.setProcessorEnabled(aprilTag, false); // 关闭处理器
+                            visionPortal.stopStreaming(); // 停止流
+                        } else if (gamepad1.y) {
+                            visionPortal.setProcessorEnabled(aprilTag, true); // 打开处理器
+                            visionPortal.resumeStreaming(); // 如需同时恢复流
+
+
                         }
                     } catch (Exception e) {
-                        // 捕获并在 telemetry 显示，避免线程直接终止
                         telemetry.addData("Vision error", e.getMessage());
                         telemetry.update();
                     }
@@ -523,50 +527,9 @@ public class MecanumWheel_new_5 extends LinearOpMode {
                 }
             }
 
-            if (visionPortal != null) {
-                try {
-                    visionPortal.close();
-                } catch (Exception ignored) {
-                }
-            }
-        }
-
-        @SuppressLint("DefaultLocale")
-        public void telemetryAprilTag() {
-
-            // Get detections and report count.
-            // 获取当前检测列表并显示数量。
-            List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-            telemetry.addData("# AprilTags Detected", currentDetections.size());
-
-            // Step through the list of detections and display info for each one.
-            // 遍历检测列表并为每个检测项显示信息。
-            for (AprilTagDetection detection : currentDetections) {
-                if (detection.metadata != null) {
-                    // If metadata available, show ID, name and pose in FTC coordinate units.
-                    // 如果存在元数据，显示 ID、元数据名称和 FTC 坐标系下位姿信息。
-                    telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
-                    telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (英寸)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
-                    telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (度)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
-                    telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (英寸, 度, 度)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
-                } else {
-                    // If no metadata, report ID as unknown and show detection center in pixels.
-                    // 如果没有元数据，则将 ID 标记为“未知”，并显示检测框中心像素坐标。
-                    telemetry.addLine(String.format("\n==== (ID %d) 未知", detection.id));
-                    telemetry.addLine(String.format("中心 %6.0f %6.0f   (像素)", detection.center.x, detection.center.y));
-                }
-
-
-            }
-
-
-            // Add "key" information to telemetry
-            // 在 telemetry 中添加说明键，解释各字段含义。
-            telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
-            telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
-            telemetry.addLine("RBE = Range, Bearing & Elevation");
 
         }
+
 
         // end method initAprilTag()
         public void initAprilTag() {
@@ -577,9 +540,10 @@ public class MecanumWheel_new_5 extends LinearOpMode {
 
                     // The following default settings are available to un-comment and edit as needed.
                     // 以下为可选默认设置（按需取消注释并修改）。
-                    //.setDrawAxes(false) // 是否绘制坐标轴
-                    //.setDrawCubeProjection(false) // 是否绘制立方体投影
-                    //.setDrawTagOutline(true) // 是否绘制标签轮廓
+                    .setDrawAxes(true) // 是否绘制坐标轴
+                    .setDrawCubeProjection(true) // 是否绘制立方体投影
+                    .setDrawTagOutline(true) // 是否绘制标签轮廓
+
                     //.setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11) // 标签族选择
                     //.setTagLibrary(AprilTagGameDatabase.getCenterStageTagLibrary()) // 使用的标签库
                     //.setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES) // 输出单位设置
@@ -588,7 +552,8 @@ public class MecanumWheel_new_5 extends LinearOpMode {
                     // If you do not manually specify calibration parameters, the SDK will attempt
                     // to load a predefined calibration for your camera.
                     // 如果不手动指定相机内参，SDK 将尝试加载预定义的相机标定参数。
-                    //.setLensIntrinsics(578.272, 578.272, 402.145, 221.506)
+                    .setLensIntrinsics(512.266019477, 512.266019477, 376.90087485, 310.696828493)
+                    //fx="512.266019477" fy="512.266019477" cx="376.90087485" cy="310.696828493"
                     // ... these parameters are fx, fy, cx, cy.
                     // ... 这些参数分别为 fx, fy, cx, cy。
 
@@ -627,13 +592,13 @@ public class MecanumWheel_new_5 extends LinearOpMode {
 
             // 设置流格式；MJPEG 相比默认的 YUY2 使用更少带宽。
             // Set stream format; MJPEG uses less bandwidth than default YUY2 in some cases.
-            builder.setStreamFormat(VisionPortal.StreamFormat.YUY2);
+            builder.setStreamFormat(VisionPortal.StreamFormat.MJPEG);
 
             // 选择当没有处理器启用时 LiveView 是否停止。
             // 如果设为 true，当没有处理器启用时监视器将显示纯橙色屏幕。
             // 如果设为 false，监视器在没有处理器启用时显示相机视图。
             // Choose whether LiveView stops when no processor is enabled.
-            builder.setAutoStopLiveView(false);
+            builder.setAutoStopLiveView(true);
 
             // Set and enable the processor.
             // 添加并启用 AprilTag 处理器。
@@ -645,8 +610,41 @@ public class MecanumWheel_new_5 extends LinearOpMode {
 
             // Disable or re-enable the aprilTag processor at any time.
             // 可随时禁用或重新启用 aprilTag 处理器。
-            //visionPortal.setProcessorEnabled(aprilTag, true);
 
+
+        }
+
+        public void telemetryAprilTag() {
+
+            // Get detections and report count.
+            // 获取当前检测列表并显示数量。
+            List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+            telemetry.addData("# AprilTags Detected", currentDetections.size());
+
+            // Step through the list of detections and display info for each one.
+            // 遍历检测列表并为每个检测项显示信息。
+            for (AprilTagDetection detection : currentDetections) {
+                if (detection.metadata != null) {
+                    // If metadata available, show ID, name and pose in FTC coordinate units.
+                    // 如果存在元数据，显示 ID、元数据名称和 FTC 坐标系下位姿信息。
+                    telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
+                    telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (英寸)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
+                    telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (度)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
+                    telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (英寸, 度, 度)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
+                } else {
+                    // If no metadata, report ID as unknown and show detection center in pixels.
+                    // 如果没有元数据，则将 ID 标记为“未知”，并显示检测框中心像素坐标。
+                    telemetry.addLine(String.format("\n==== (ID %d) 未知", detection.id));
+                    telemetry.addLine(String.format("中心 %6.0f %6.0f   (像素)", detection.center.x, detection.center.y));
+                }
+
+
+            }
+
+
+            // Add "key" information to telemetry
+            // 在 telemetry 中添加说明键，解释各字段含义。
+            telemetry.addLine("- XYZ: 3D空间坐标 (X, Y, Z)，单位英寸，表示AprilTag相对于摄像头的位置\n" + "   - PRY: 姿态角 (Pitch, Roll, Yaw)，单位度，表示AprilTag的旋转状态\n" + "   - RBE: 距离-方位-仰角 (Range, Bearing, Elevation)，单位英寸和度，表示AprilTag相对于摄像头的球坐标系位置\n");
         }
 
 

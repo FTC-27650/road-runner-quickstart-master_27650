@@ -36,7 +36,7 @@ public class parabola_test extends LinearOpMode {
         motor2 = hardwareMap.get(DcMotorEx.class, "m2");
         motor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         motor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        servo1 = hardwareMap.get(Servo.class, "s1");
+
         motor1.setDirection(DcMotorEx.Direction.FORWARD);
         motor2.setDirection(DcMotorEx.Direction.REVERSE);
 
@@ -56,39 +56,7 @@ public class parabola_test extends LinearOpMode {
                 double tanTheta2 = ((v * v) - sqrtDiscriminant) / (g * d);//低抛角
                 double theta1 = Math.atan(tanTheta1);
                 double theta2 = Math.atan(tanTheta2);
-                double servoPosition1 = (Math.toDegrees(theta1) * k1);
-                double servoPosition2 = (Math.toDegrees(theta2) * k1);// 弧度
 
-                if (gamepad1.right_bumper) {
-                    motor1.setPower(power);
-                    motor2.setPower(power);
-                } else {
-                    motor1.setPower(0);
-                    motor2.setPower(0);
-                }
-                if (gamepad1.a) {
-                    k = k + 0.0005;
-                }
-                if (gamepad1.b) {
-                    k = k - 0.0005;
-                }
-                if (gamepad1.x) {
-                    k1 = k1 + 0.0005;
-                }
-                if (gamepad1.y) {
-                    k1 = k1 - 0.0005;
-                }
-                double mode = 0;
-
-                if (servoPosition1 >= 0 && servoPosition1 <= 1) {
-                    mode = 1;
-                    servo1.setPosition(servoPosition1);
-
-                } else if (servoPosition2 >= 0 && servoPosition2 <= 1) {
-                    mode = 2;
-                    servo1.setPosition(servoPosition2);
-                }
-                telemetry.addData("mode", "%1f", mode);
 
                 telemetry.addData("theta1 (弧度)", "%4.4f", Math.atan(theta1));
                 telemetry.addData("theta2 (弧度)", "%4.4f", Math.atan(theta2));

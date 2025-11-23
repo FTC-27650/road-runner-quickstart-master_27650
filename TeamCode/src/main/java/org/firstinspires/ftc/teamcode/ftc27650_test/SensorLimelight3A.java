@@ -41,7 +41,6 @@ import com.qualcomm.hardware.limelightvision.LLStatus;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
@@ -102,16 +101,13 @@ public class SensorLimelight3A extends LinearOpMode {
 
         telemetry.addData(">", "Robot Ready.  Press Play.");
         telemetry.update();
-        DcMotorEx m0 = null;
-        m0 = hardwareMap.get(DcMotorEx.class, "m0"); // c0
+
 
 
         waitForStart();
 
         while (opModeIsActive()) {
-            if (gamepad1.a) {
-                m0.setPower(1);
-            }
+
 
             LLStatus status = limelight.getStatus();
 
