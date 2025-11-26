@@ -1,5 +1,6 @@
 plugins {
     id 'java-library'
+    id 'application'
 }
 
 java {
@@ -18,5 +19,9 @@ repositories {
 
 dependencies {
     implementation 'com.github.rh-robotics:MeepMeep:-SNAPSHOT'
+}
+
+application {
+    mainClass = 'com.example.meepmeeptesting.MeepMeepTesting'
 }
 

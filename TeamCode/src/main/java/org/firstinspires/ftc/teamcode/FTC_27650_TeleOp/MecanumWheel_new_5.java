@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.FTC_27650_TeleOp;
 
-import android.annotation.SuppressLint;
 import android.graphics.Color;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -103,8 +102,7 @@ public class MecanumWheel_new_5 extends LinearOpMode {
             flyWheelControl();
             xiMotor();
             ledControl();
-
-            //show();
+            show();
         }
     }
 
@@ -131,8 +129,6 @@ public class MecanumWheel_new_5 extends LinearOpMode {
         telemetry.addData("g, p", "%d, %d", g, p);
         telemetry.update();
     }
-
-    @SuppressLint("DefaultLocale")
 
 
     public void Mecanum() {
@@ -488,19 +484,13 @@ public class MecanumWheel_new_5 extends LinearOpMode {
          * The variable to store our instance of the vision portal.
          */
         public VisionPortal visionPortal;
-        public boolean streamingStopped = true;
 
         public void run() {
-
             initAprilTag();
-
             // 不在子线程调用 waitForStart()，避免与主线程冲突
-
             while (opModeIsActive()) {
-
                 telemetryAprilTag();
                 telemetry.update();
-
                 // 安全地控制流（避免重复调用或者在 visionPortal 为 null 时崩溃）
                 if (visionPortal != null) {
                     try {
@@ -510,15 +500,12 @@ public class MecanumWheel_new_5 extends LinearOpMode {
                         } else if (gamepad1.y) {
                             visionPortal.setProcessorEnabled(aprilTag, true); // 打开处理器
                             visionPortal.resumeStreaming(); // 如需同时恢复流
-
-
                         }
                     } catch (Exception e) {
                         telemetry.addData("Vision error", e.getMessage());
                         telemetry.update();
                     }
                 }
-
                 try {
                     sleep(20);
                 } catch (InterruptedException e) {
@@ -537,7 +524,6 @@ public class MecanumWheel_new_5 extends LinearOpMode {
             // Create the AprilTag processor.
             // 创建 AprilTag 处理器实例。
             aprilTag = new AprilTagProcessor.Builder()
-
                     // The following default settings are available to un-comment and edit as needed.
                     // 以下为可选默认设置（按需取消注释并修改）。
                     .setDrawAxes(true) // 是否绘制坐标轴
@@ -556,9 +542,7 @@ public class MecanumWheel_new_5 extends LinearOpMode {
                     //fx="512.266019477" fy="512.266019477" cx="376.90087485" cy="310.696828493"
                     // ... these parameters are fx, fy, cx, cy.
                     // ... 这些参数分别为 fx, fy, cx, cy。
-
                     .build();
-
             // Adjust Image Decimation to trade-off detection-range for detection-rate.
             // 调整图像降采样以在检测距离与检测率之间做权衡。
             // eg: Some typical detection data using a Logitech C920 WebCam
@@ -574,7 +558,6 @@ public class MecanumWheel_new_5 extends LinearOpMode {
             // Create the vision portal by using a builder.
             // 使用构建器创建 VisionPortal（视觉入口）。
             VisionPortal.Builder builder = new VisionPortal.Builder();
-
             // Set the camera (webcam vs. built-in RC phone camera).
             // 设置相机（外接 webcam 或 内置 RC 手机相机）。
             if (USE_WEBCAM) {
@@ -582,45 +565,35 @@ public class MecanumWheel_new_5 extends LinearOpMode {
             } else {
                 builder.setCamera(BuiltinCameraDirection.BACK);
             }
-
             // 选择相机分辨率。并非所有相机都支持所有分辨率。
             //builder.setCameraResolution(new Size(640, 480));
 
             // 启用 RC 预览（LiveView）。将其设为 false 可省略相机监视。
             // Enable RC preview (LiveView). Set false to skip camera monitor.
             builder.enableLiveView(true);
-
             // 设置流格式；MJPEG 相比默认的 YUY2 使用更少带宽。
             // Set stream format; MJPEG uses less bandwidth than default YUY2 in some cases.
             builder.setStreamFormat(VisionPortal.StreamFormat.MJPEG);
-
             // 选择当没有处理器启用时 LiveView 是否停止。
             // 如果设为 true，当没有处理器启用时监视器将显示纯橙色屏幕。
             // 如果设为 false，监视器在没有处理器启用时显示相机视图。
             // Choose whether LiveView stops when no processor is enabled.
             builder.setAutoStopLiveView(true);
-
             // Set and enable the processor.
             // 添加并启用 AprilTag 处理器。
             builder.addProcessor(aprilTag);
-
             // Build the Vision Portal, using the above settings.
             // 使用上述设置构建 VisionPortal 实例。
             visionPortal = builder.build();
-
             // Disable or re-enable the aprilTag processor at any time.
             // 可随时禁用或重新启用 aprilTag 处理器。
-
-
         }
 
         public void telemetryAprilTag() {
-
             // Get detections and report count.
             // 获取当前检测列表并显示数量。
             List<AprilTagDetection> currentDetections = aprilTag.getDetections();
             telemetry.addData("# AprilTags Detected", currentDetections.size());
-
             // Step through the list of detections and display info for each one.
             // 遍历检测列表并为每个检测项显示信息。
             for (AprilTagDetection detection : currentDetections) {
@@ -637,11 +610,7 @@ public class MecanumWheel_new_5 extends LinearOpMode {
                     telemetry.addLine(String.format("\n==== (ID %d) 未知", detection.id));
                     telemetry.addLine(String.format("中心 %6.0f %6.0f   (像素)", detection.center.x, detection.center.y));
                 }
-
-
             }
-
-
             // Add "key" information to telemetry
             // 在 telemetry 中添加说明键，解释各字段含义。
             telemetry.addLine("- XYZ: 3D空间坐标 (X, Y, Z)，单位英寸，表示AprilTag相对于摄像头的位置\n" + "   - PRY: 姿态角 (Pitch, Roll, Yaw)，单位度，表示AprilTag的旋转状态\n" + "   - RBE: 距离-方位-仰角 (Range, Bearing, Elevation)，单位英寸和度，表示AprilTag相对于摄像头的球坐标系位置\n");
