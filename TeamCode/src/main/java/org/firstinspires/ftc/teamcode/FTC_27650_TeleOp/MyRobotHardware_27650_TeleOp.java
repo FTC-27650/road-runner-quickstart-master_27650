@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.FTC_27650_TeleOp;
 
-import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -35,7 +34,7 @@ public class MyRobotHardware_27650_TeleOp {
     //public TouchSensor magnetic_out;
     public TouchSensor magnetic_in;
 
-    RevBlinkinLedDriver blinkinLedDriver;
+    //RevBlinkinLedDriver blinkinLedDriver;
 
     IMU imu;
 
@@ -59,7 +58,7 @@ public class MyRobotHardware_27650_TeleOp {
 
         rotateMotor = myOpMode.hardwareMap.get(DcMotorEx.class, "rm");//e3
 
-        strikerServo = myOpMode.hardwareMap.get(Servo.class, "ss");//cs0
+        strikerServo = myOpMode.hardwareMap.get(Servo.class, "ss");//es0
 
         angleServo = myOpMode.hardwareMap.get(Servo.class, "as");//es5
 
@@ -68,9 +67,9 @@ public class MyRobotHardware_27650_TeleOp {
         colorSensorRight = myOpMode.hardwareMap.get(NormalizedColorSensor.class, "csr");//I2C 3
 
         //magnetic_out = myOpMode.hardwareMap.get(TouchSensor.class,"mo");//ed0
-        magnetic_in = myOpMode.hardwareMap.get(TouchSensor.class, "mi");//ed6
+        magnetic_in = myOpMode.hardwareMap.get(TouchSensor.class, "mi");//cd6
 
-        blinkinLedDriver = myOpMode.hardwareMap.get(RevBlinkinLedDriver.class, "blinkin");//eservo0
+        //blinkinLedDriver = myOpMode.hardwareMap.get(RevBlinkinLedDriver.class, "blinkin");//eservo0
 
         imu = myOpMode.hardwareMap.get(IMU.class, "imu"); // c I2C 0
 
