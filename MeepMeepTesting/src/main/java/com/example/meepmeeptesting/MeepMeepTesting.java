@@ -7,6 +7,7 @@ import org.rowlandhall.meepmeep.roadrunner.DefaultBotBuilder;
 import org.rowlandhall.meepmeep.roadrunner.entity.RoadRunnerBotEntity;
 
 public class MeepMeepTesting {
+    @SuppressWarnings("FeatureEnvy")
     public static void main(String[] args) {
         MeepMeep meepMeep = new MeepMeep(800);
 
@@ -18,10 +19,6 @@ public class MeepMeepTesting {
                         .lineToSplineHeading(new Pose2d(50,50, Math.toRadians(0)))
                         .build());
 
-
-//        Image background = ImageIO.read(
-//                Objects.requireNonNull(MeepMeep.class.getResourceAsStream("/background/season-2025-decode/field-2025-official.png"))//
-//        );
 
         meepMeep.setBackground(MeepMeep.Background.FIELD_DECODE_OFFICIAL)
                 .setDarkMode(true)
