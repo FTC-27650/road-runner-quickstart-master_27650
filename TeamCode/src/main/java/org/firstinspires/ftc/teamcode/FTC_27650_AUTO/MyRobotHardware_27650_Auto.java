@@ -39,7 +39,6 @@ public class MyRobotHardware_27650_Auto {
     IMU imu;
 
     private LinearOpMode myOpMode = null;
-
     public MyRobotHardware_27650_Auto(LinearOpMode opmode) {
         myOpMode = opmode;
     }

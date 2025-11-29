@@ -490,7 +490,6 @@ public class MecanumWheel_new_red extends LinearOpMode {
         public static final boolean USE_WEBCAM = true;
         public AprilTagProcessor aprilTag;
         public VisionPortal visionPortal;
-        public boolean streamingStopped = true;
 
         public void run() {
             initAprilTag();
