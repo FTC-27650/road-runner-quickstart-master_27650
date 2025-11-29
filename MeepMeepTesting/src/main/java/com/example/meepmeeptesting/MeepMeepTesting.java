@@ -14,8 +14,8 @@ public class MeepMeepTesting {
         RoadRunnerBotEntity myBot = new DefaultBotBuilder(meepMeep)
                 // 设置机器人约束：最大速度、最大加速度、最大角速度、最大角加速度、轨迹宽度
                 .setConstraints(80, 80, Math.toRadians(270), Math.toRadians(270), 16)
-                .followTrajectorySequence(drive -> drive.trajectorySequenceBuilder(new Pose2d(0, 0,Math.toRadians(90)))
-                        .lineToLinearHeading(new Pose2d(0, 50, Math.toRadians(0)))
+                .followTrajectorySequence(drive -> drive.trajectorySequenceBuilder(new Pose2d(-62.20, 37.8, Math.toRadians(270)))
+                        .lineToLinearHeading(new Pose2d(12, 10, Math.toRadians(190)))
                         .lineToSplineHeading(new Pose2d(50,50, Math.toRadians(0)))
                         .build());
 

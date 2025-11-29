@@ -123,13 +123,13 @@ public class RED_1 extends LinearOpMode {
                 .splineTo(new Vector2d(-12, 36), Math.toRadians(89),
                         new TranslationalVelConstraint(10.0))
                 .waitSeconds(0.6)
-                .splineTo(new Vector2d(-12, 40), Math.toRadians(89),
+                .splineTo(new Vector2d(-12, 42), Math.toRadians(89),
                         new TranslationalVelConstraint(7.0));
         //.waitSeconds(0.5)
         //.splineTo(new Vector2d(-12, -48), Math.toRadians(271),
         //new TranslationalVelConstraint(7.0));
 
-        TrajectoryActionBuilder she_2 = drive.actionBuilder(new Pose2d(-12, 40, Math.toRadians(89)))
+        TrajectoryActionBuilder she_2 = drive.actionBuilder(new Pose2d(-12, 42, Math.toRadians(89)))
                 .strafeToLinearHeading(new Vector2d(-12, 10), Math.toRadians(133));
 
         telemetry.addData("初始化", "完毕");
@@ -187,7 +187,7 @@ public class RED_1 extends LinearOpMode {
         flyWheelTargetVelocity = 1550;
         angleServoPosition = 0.6;
         rotateMotorTargetPosition += (step - errorPosition);//转到准备发射位置
-        sleep(800);
+        sleep(2000);
         if (oldId == 21) {
             greenBall();
             purpleBall();

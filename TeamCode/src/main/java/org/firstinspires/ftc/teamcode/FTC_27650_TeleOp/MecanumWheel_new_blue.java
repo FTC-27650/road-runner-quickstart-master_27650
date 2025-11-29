@@ -68,6 +68,7 @@ public class MecanumWheel_new_blue extends LinearOpMode {
     volatile boolean camUsing = false;
     volatile double range = 0, angleZ = 0, angleY = 0;
     volatile int id = 0;
+    public static double anglekp = 0.20;
 
     @Override
     public void runOpMode() {
@@ -490,7 +491,6 @@ public class MecanumWheel_new_blue extends LinearOpMode {
         public static final boolean USE_WEBCAM = true;
         public AprilTagProcessor aprilTag;
         public VisionPortal visionPortal;
-        public boolean streamingStopped = true;
 
         public void run() {
             initAprilTag();
@@ -507,7 +507,7 @@ public class MecanumWheel_new_blue extends LinearOpMode {
                                 angleServoPosition = 0;
                             } else if (33.5 <= range && range <= 95) {
                                 flyWheelTargetVelocity = 1220 + (range) * 4.5;
-                                angleServoPosition = 0.012 * range - 0.30;
+                                angleServoPosition = 0.012 * range - anglekp;
                                 //flyWheelTargetVelocity = 1200+(range)*5;
                                 //angleServoPosition = 0.013*range-0.44;
                             } else if (115 <= range) {
