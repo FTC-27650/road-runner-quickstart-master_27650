@@ -98,7 +98,7 @@ public class MecanumWheel_new_blue extends LinearOpMode {
         telemetry.update();
 
         waitForStart();
-        cameraThread.start();
+         
         setRotateMotorPositionThread.start();
         while (opModeIsActive()) {
             servoControl();
