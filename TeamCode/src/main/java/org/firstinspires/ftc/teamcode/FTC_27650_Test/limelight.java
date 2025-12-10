@@ -2,16 +2,19 @@ package org.firstinspires.ftc.teamcode.FTC_27650_Test;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import java.util.List;
+
 @TeleOp(name = "limelight", group = "limelight")
 @Config
 public class limelight extends LinearOpMode {
-    public static double limelightMountAngleDegrees = 25.0; // 您的limelight从完全垂直方向向后旋转了多少度？
-    public static double limelightLensHeightInches = 10; // Limelight镜头中心到地面的距离
-    public static double goalHeightInches = 24.0;// 目标到地面的距离
+    public static double limelightMountAngleDegrees = 0; // 您的limelight从完全垂直方向向后旋转了多少度？
+    public static double limelightLensHeightInches = 6.1; // Limelight镜头中心到地面的距离
+    public static double goalHeightInches = 29.33071;// 目标到地面的距离
 
     @Override
 
@@ -33,7 +36,11 @@ public class limelight extends LinearOpMode {
 
                 telemetry.addData("目标 X", tx);
                 telemetry.addData("目标 Y", ty);
-                telemetry.addData("目标面积", ta);
+                telemetry.addData("目标大小", ta);
+                List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
+                for (LLResultTypes.FiducialResult fr : fiducialResults) {
+                    telemetry.addData("Fiducial", "ID: %d, Family: %s, X: %.2f, Y: %.2f", fr.getFiducialId(), fr.getFamily(), fr.getTargetXDegrees(), fr.getTargetYDegrees());
+                }
 
                 // Estimating_Distance（估算距离）方法的使用示例
                 // 你需要提供实际的安装角度和高度
