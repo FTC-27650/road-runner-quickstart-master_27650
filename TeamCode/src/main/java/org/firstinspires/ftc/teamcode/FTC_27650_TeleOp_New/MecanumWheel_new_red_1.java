@@ -688,9 +688,9 @@ public class MecanumWheel_new_red_1 extends LinearOpMode {
     public class limeLightThread extends Thread {
         public void run() {
             // 您的limelight从完全垂直方向向后旋转了多少度？
-            double h1 = 28;//(90-28)=62
+            double a1 = 28;//(90-28)=62
             // Limelight镜头中心到地面的距离
-            double a1 = 27.2;
+            double h1 = 27.2;
             // 目标到地面的距离
             double h2 = 74.1;
             while (opModeIsActive()) {
@@ -750,8 +750,9 @@ public class MecanumWheel_new_red_1 extends LinearOpMode {
                     // 3. 获取炮台目标角度
                     turretTargetAngle = TurretTargeting_Red.getTurretTargetAngle();
                     ///旋转炮台算法
+                    sleep(10);
                 }
-                sleep(10);
+
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
