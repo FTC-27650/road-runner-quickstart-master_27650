@@ -23,9 +23,10 @@ public class MyRobotHardware_27650_TeleOp {
 
     public DcMotorEx rotateMotor = null;
 
-    public Servo strikerServo = null;
-
-    public Servo angleServo = null;
+    public Servo strikerServo = null;       //servo hub 0 //down:0.186 up:0.384
+    public Servo angleServo = null;         //servo hub 1 //down:0 up:1
+    public Servo leftRotateServo = null;    //servo hub 2
+    public Servo rightRotateServo = null;   //servo hub 3
 
     public NormalizedColorSensor colorSensorFront;
     public NormalizedColorSensor colorSensorLeft;
@@ -56,9 +57,9 @@ public class MyRobotHardware_27650_TeleOp {
 
         xiMotor = myOpMode.hardwareMap.get(DcMotor.class, "xm");//e2
 
-        rotateMotor = myOpMode.hardwareMap.get(DcMotorEx.class, "rm");//e3
+        rotateMotor = myOpMode.hardwareMap.get(DcMotorEx.class, "rm");//e3 弹舱
 
-        strikerServo = myOpMode.hardwareMap.get(Servo.class, "ss");//es0
+        strikerServo = myOpMode.hardwareMap.get(Servo.class, "ss");//es0  扳机
 
         angleServo = myOpMode.hardwareMap.get(Servo.class, "as");//es5
 

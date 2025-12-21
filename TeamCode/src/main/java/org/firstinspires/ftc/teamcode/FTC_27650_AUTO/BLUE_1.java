@@ -37,8 +37,8 @@ public class BLUE_1 extends LinearOpMode {
     servo_xiMotor servo_xiMotorThread = new servo_xiMotor();
     setFlyMotorVelocity setFlyMotorVelocity = new setFlyMotorVelocity();
     setRotateMotorPositionThread setRotateMotorPositionThread = new setRotateMotorPositionThread();
-    public static double purpleMin = 215, purpleMax = 260;
     public static volatile double flyWheelTargetVelocity = 0;
+    public static double purpleMin = 215, purpleMax = 260;
     public static double fly_kp = 0.01;
     public static double fly_ki = 0.05;
     public static double fly_kd = 0.000005;
@@ -128,13 +128,13 @@ public class BLUE_1 extends LinearOpMode {
                 .splineTo(new Vector2d(-12, -36), Math.toRadians(271),
                         new TranslationalVelConstraint(10.0))
                 .waitSeconds(0.6)
-                .splineTo(new Vector2d(-12, -42), Math.toRadians(271),
+                .splineTo(new Vector2d(-12, -40), Math.toRadians(271),
                         new TranslationalVelConstraint(7.0));
         //.waitSeconds(0.5)
         //.splineTo(new Vector2d(-12, -48), Math.toRadians(271),
         //new TranslationalVelConstraint(7.0));
 
-        TrajectoryActionBuilder she_2 = drive.actionBuilder(new Pose2d(-12, -42, Math.toRadians(271)))
+        TrajectoryActionBuilder she_2 = drive.actionBuilder(new Pose2d(-12, -40, Math.toRadians(271)))
                 .strafeToLinearHeading(new Vector2d(-12, -10), Math.toRadians(227));
 
         telemetry.addData("初始化", "完毕");
@@ -309,137 +309,6 @@ public class BLUE_1 extends LinearOpMode {
             //telemetry.addLine("- XYZ: 3D空间坐标 (X, Y, Z)，单位英寸，表示AprilTag相对于摄像头的位置\n" + "   - PRY: 姿态角 (Pitch, Roll, Yaw)，单位度，表示AprilTag的旋转状态\n" + "   - RBE: 距离-方位-仰角 (Range, Bearing, Elevation)，单位英寸和度，表示AprilTag相对于摄像头的球坐标系位置\n");
         }
     }
-
-    public void xiBall() {
-        rotateMotorTargetPosition += (step + errorPosition);//转到准备发射位置
-        sleep(1000);
-        xiMotorPower = 1.0;
-        b = 2;
-        c = 0;
-    }
-    public class servo_xiMotor extends Thread {
-        public void run() {
-            try {
-                while (opModeIsActive()) {
-                    robot.strikerServo.setPosition(strikerServoPosition);
-                    robot.angleServo.setPosition(angleServoPosition);
-                    robot.xiMotor.setPower(xiMotorPower);
-                    //sleep(5);
-                }
-                sleep(5);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    public class setFlyMotorVelocity extends Thread {
-        public void run() {
-            try {
-                double error = 0;
-                double lastError = 0;
-                double ki = 0;
-                double kd = 0;
-                // 在setRotateMotorPositionThread中使用固定周期控制
-                ElapsedTime loopTimer = new ElapsedTime();
-                final double loopPeriod = 0.01; // 10ms周期
-                while (opModeIsActive()) {
-
-                    double dt = loopTimer.seconds();
-                    loopTimer.reset();
-
-                    flyWheelCurrentVelocity = 0.5 * (robot.flyWheelLeft.getVelocity() + robot.flyWheelRight.getVelocity());
-
-                    error = flyWheelTargetVelocity - flyWheelCurrentVelocity;
-                    ki += error * dt;
-                    // 误差过小时清除积分（避免静态误差累积）
-                    if (Math.abs(error) < rotateMotorMaxErrorPosition * 2) ki = 0;
-                    //ki = Math.max(-ki_max, Math.min(ki, ki_max));  // 根据实际情况调整上下限
-                    kd = (error - lastError) / dt;
-
-                    double flyPower = error * fly_kp + ki * fly_ki + kd * fly_kd;
-
-                    //robot.flyWheelLeft.setPower(flyPower);
-                    //robot.flyWheelRight.setPower(flyPower);
-                    robot.flyWheelLeft.setVelocity(flyWheelTargetVelocity);
-                    robot.flyWheelRight.setVelocity(flyWheelTargetVelocity);
-                    lastError = error;
-
-                    sleep(Math.max(0, 10 - (long) (dt * 1000)));  // 确保总周期约10ms
-                    // 确保周期稳定（补全不足的时间）
-                    double elapsed = loopTimer.seconds();
-                    if (elapsed < loopPeriod) {
-                        sleep((long) ((loopPeriod - elapsed) * 1000));
-                    }
-                }
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    public void show() {
-        telemetry.clear();
-        telemetry.addData("ID", "%7d", oldId);
-        telemetry.addData("球颜色 前/左/右", "%s, %s, %s", colorFront, colorLeft, colorRight);
-        telemetry.addData("左飞轮功率/转速", "%4.2f, %4.2f", robot.flyWheelLeft.getPower(), robot.flyWheelLeft.getVelocity());
-        telemetry.addData("右飞轮功率/转速", "%4.2f, %4.2f", robot.flyWheelRight.getPower(), robot.flyWheelRight.getVelocity());
-        telemetry.addData("旋转误差", "%7d", rotateError);
-        telemetry.addData("旋转位置", "%7d", rotateMotorCurrentPosition);
-        telemetry.addData("目标位置 ", "%7d", rotateMotorTargetPosition);
-        telemetry.addData("g / p", "%7d, %7d", g, p);
-        telemetry.update();
-    }
-
-    public void faShe() {
-        flyWheelTargetVelocity = 1550;
-        angleServoPosition = 0.6;
-        rotateMotorTargetPosition += (step - errorPosition);//转到准备发射位置
-        sleep(2000);
-        if (oldId == 21) {
-            greenBall();
-            purpleBall();
-            purpleBall();
-        }
-        if (oldId == 22) {
-            purpleBall();
-            greenBall();
-            purpleBall();
-        }
-        if (oldId == 23) {
-            purpleBall();
-            purpleBall();
-            greenBall();
-        }
-        flyWheelTargetVelocity = 0;
-    }
-
-    public void greenBall() {
-        g = 2;
-        runtime.reset();
-        while (opModeIsActive() && runtime.seconds() <= while_time) {
-            if (g == 1) break;
-        }
-        g = 1;
-        strikerServoPosition = strikerServoUpPosition;
-        sleep(upTime);
-        strikerServoPosition = strikerServoDownPosition;
-        sleep(downTime);
-    }
-
-    public void purpleBall() {
-        p = 2;
-        runtime.reset();
-        while (opModeIsActive() && runtime.seconds() <= while_time) {
-            if (p == 1) break;
-        }
-        p = 1;
-        strikerServoPosition = strikerServoUpPosition;
-        sleep(upTime);
-        strikerServoPosition = strikerServoDownPosition;
-        sleep(downTime);
-    }
-
     public class colorSensor extends Thread {
         public void run() {
             try {
@@ -518,6 +387,137 @@ public class BLUE_1 extends LinearOpMode {
                     //sleep(5);
                 }
                 sleep(5);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    public void xiBall() {
+        rotateMotorTargetPosition += (step + errorPosition);//转到准备发射位置
+        sleep(1000);
+        xiMotorPower = 1.0;
+        b = 2;
+        c = 0;
+    }
+
+    public void show() {
+        telemetry.clear();
+        telemetry.addData("ID", "%7d", oldId);
+        telemetry.addData("球颜色 前/左/右", "%s, %s, %s", colorFront, colorLeft, colorRight);
+        telemetry.addData("左飞轮功率/转速", "%4.2f, %4.2f", robot.flyWheelLeft.getPower(), robot.flyWheelLeft.getVelocity());
+        telemetry.addData("右飞轮功率/转速", "%4.2f, %4.2f", robot.flyWheelRight.getPower(), robot.flyWheelRight.getVelocity());
+        telemetry.addData("旋转误差", "%7d", rotateError);
+        telemetry.addData("旋转位置", "%7d", rotateMotorCurrentPosition);
+        telemetry.addData("目标位置 ", "%7d", rotateMotorTargetPosition);
+        telemetry.addData("g / p", "%7d, %7d", g, p);
+        telemetry.update();
+    }
+
+    public void faShe() {
+        flyWheelTargetVelocity = 1550;
+        angleServoPosition = 0.6;
+        rotateMotorTargetPosition += (step - errorPosition);//转到准备发射位置
+        sleep(800);
+        if (oldId == 21) {
+            greenBall();
+            purpleBall();
+            purpleBall();
+        }
+        if (oldId == 22) {
+            purpleBall();
+            greenBall();
+            purpleBall();
+        }
+        if (oldId == 23) {
+            purpleBall();
+            purpleBall();
+            greenBall();
+        }
+        flyWheelTargetVelocity = 0;
+    }
+
+    public void greenBall() {
+        g = 2;
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds() <= while_time) {
+            if (g == 1) break;
+        }
+        g = 1;
+        strikerServoPosition = strikerServoUpPosition;
+        sleep(upTime);
+        strikerServoPosition = strikerServoDownPosition;
+        sleep(downTime);
+    }
+
+    public void purpleBall() {
+        p = 2;
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds() <= while_time) {
+            if (p == 1) break;
+        }
+        p = 1;
+        strikerServoPosition = strikerServoUpPosition;
+        sleep(upTime);
+        strikerServoPosition = strikerServoDownPosition;
+        sleep(downTime);
+    }
+
+    public class servo_xiMotor extends Thread {
+        public void run() {
+            try {
+                while (opModeIsActive()) {
+                    robot.strikerServo.setPosition(strikerServoPosition);
+                    robot.angleServo.setPosition(angleServoPosition);
+                    robot.xiMotor.setPower(xiMotorPower);
+                    //sleep(5);
+                }
+                sleep(5);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    public class setFlyMotorVelocity extends Thread {
+        public void run() {
+            try {
+                double error = 0;
+                double lastError = 0;
+                double ki = 0;
+                double kd = 0;
+                // 在setRotateMotorPositionThread中使用固定周期控制
+                ElapsedTime loopTimer = new ElapsedTime();
+                final double loopPeriod = 0.01; // 10ms周期
+                while (opModeIsActive()) {
+
+                    double dt = loopTimer.seconds();
+                    loopTimer.reset();
+
+                    flyWheelCurrentVelocity = 0.5 * (robot.flyWheelLeft.getVelocity() + robot.flyWheelRight.getVelocity());
+
+                    error = flyWheelTargetVelocity - flyWheelCurrentVelocity;
+                    ki += error * dt;
+                    // 误差过小时清除积分（避免静态误差累积）
+                    if (Math.abs(error) < rotateMotorMaxErrorPosition * 2) ki = 0;
+                    //ki = Math.max(-ki_max, Math.min(ki, ki_max));  // 根据实际情况调整上下限
+                    kd = (error - lastError) / dt;
+
+                    double flyPower = error * fly_kp + ki * fly_ki + kd * fly_kd;
+
+                    //robot.flyWheelLeft.setPower(flyPower);
+                    //robot.flyWheelRight.setPower(flyPower);
+                    robot.flyWheelLeft.setVelocity(flyWheelTargetVelocity);
+                    robot.flyWheelRight.setVelocity(flyWheelTargetVelocity);
+                    lastError = error;
+
+                    sleep(Math.max(0, 10 - (long) (dt * 1000)));  // 确保总周期约10ms
+                    // 确保周期稳定（补全不足的时间）
+                    double elapsed = loopTimer.seconds();
+                    if (elapsed < loopPeriod) {
+                        sleep((long) ((loopPeriod - elapsed) * 1000));
+                    }
+                }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

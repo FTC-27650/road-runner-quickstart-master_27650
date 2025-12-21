@@ -31,27 +31,17 @@ import java.util.List;
 
 public class RED_2 extends LinearOpMode {
     public static double greenMin = 140, greenMax = 170;
-    public static double purpleMin = 215, purpleMax = 260;
-    public static volatile double flyWheelTargetVelocity = 0;
-    public static double fly_kp = 0.01;
-    public static double fly_ki = 0.05;
-    public static double fly_kd = 0.000005;
-    public static int rotateMotorMaxErrorPosition = 100;
-    public static int errorPosition = 1422;
-    public static double rotate_kp = 0.0006;//0.01;
-    public static double rotate_ki = 0.00005;//0.001,
-    public static double rotate_kd = 0.0000006;//0.001;
-    public static double ki_max = 5000;
-    public static double kf = 0;
-    final float[] hsvValuesFront = new float[3]; // 1前面色调 2饱和度
-    final float[] hsvValuesLeft = new float[3]; // 1左边色调 2饱和度
-    final float[] hsvValuesRight = new float[3];// 1右边色调 2饱和度
     MyRobotHardware_27650_Auto robot = new MyRobotHardware_27650_Auto(this);
     camera cameraThread = new camera();
     colorSensor colorSensorThread = new colorSensor();
     servo_xiMotor servo_xiMotorThread = new servo_xiMotor();
     setFlyMotorVelocity setFlyMotorVelocity = new setFlyMotorVelocity();
     setRotateMotorPositionThread setRotateMotorPositionThread = new setRotateMotorPositionThread();
+    public static double purpleMin = 215, purpleMax = 260;
+    public static volatile double flyWheelTargetVelocity = 0;
+    public static double fly_kp = 0.01;
+    public static double fly_ki = 0.05;
+    public static double fly_kd = 0.000005;
     float gain = 3;//颜色传感器增益值，要>=1
     volatile String colorFront = "无";
     volatile String colorLeft = "无";
@@ -59,32 +49,46 @@ public class RED_2 extends LinearOpMode {
     volatile double distanceFront = 0;
     volatile double distanceLeft = 0;
     volatile double distanceRight = 0;
+
     volatile double strikerServoDownPosition = 0.43;//角度舵机
     volatile double strikerServoUpPosition = 0.15;//角度舵机
     volatile double strikerServoPosition = strikerServoDownPosition;
     volatile double angleServoPosition = 0; //初始化位置
+
     volatile boolean camUsing = false;
     volatile double range = 0, angleZ = 0, angleY = 0;
     volatile int id = 0;
     volatile int oldId = 0;
+    public static int rotateMotorMaxErrorPosition = 100;
     volatile double flyWheelCurrentVelocity = 0;
+    public static int errorPosition = 1422;
+    public static double rotate_kp = 0.0006;//0.01;
+    public static double rotate_ki = 0.00005;//0.001,
     volatile double xiMotorPower = 0;
+
     volatile int rotateMotorCurrentPosition = 0;
     volatile int rotateMotorTargetPosition = 0;
     int rotateError = 0;
     volatile double rotateMotorPower = 0;
+    public static double rotate_kd = 0.0000006;//0.001;
+    public static double ki_max = 5000;
+    public static double kf = 0;
+    final float[] hsvValuesFront = new float[3]; // 1前面色调 2饱和度
+    final float[] hsvValuesLeft = new float[3]; // 1左边色调 2饱和度
+    final float[] hsvValuesRight = new float[3];// 1右边色调 2饱和度
+    private ElapsedTime runtime = new ElapsedTime();
     volatile int step = 2731;
     double rotateMotorMinPower = 0.1;
     double rotateMotorMaxPower = 0.8;
+
     volatile int c = 0;
     volatile int b = 1;
     volatile int g = 1;
     volatile int p = 1;
+
     volatile int upTime = 400;
     volatile int downTime = 400;
     double while_time = 3;
-    private ElapsedTime runtime = new ElapsedTime();
-
     @Override
     public void runOpMode() throws InterruptedException {
         robot.init();
@@ -162,87 +166,12 @@ public class RED_2 extends LinearOpMode {
         //runBlocking(new SequentialAction(she_2.build()));
         //faShe();
     }
-
-    public void xiBall() {
-        rotateMotorTargetPosition += (step + errorPosition);//转到准备发射位置
-        sleep(1000);
-        xiMotorPower = 1.0;
-        b = 2;
-        c = 0;
-    }
-
-    public void show() {
-        telemetry.clear();
-        telemetry.addData("ID", "%7d", oldId);
-        telemetry.addData("球颜色 前/左/右", "%s, %s, %s", colorFront, colorLeft, colorRight);
-        telemetry.addData("左飞轮功率/转速", "%4.2f, %4.2f", robot.flyWheelLeft.getPower(), robot.flyWheelLeft.getVelocity());
-        telemetry.addData("右飞轮功率/转速", "%4.2f, %4.2f", robot.flyWheelRight.getPower(), robot.flyWheelRight.getVelocity());
-        telemetry.addData("旋转误差", "%7d", rotateError);
-        telemetry.addData("旋转位置", "%7d", rotateMotorCurrentPosition);
-        telemetry.addData("目标位置 ", "%7d", rotateMotorTargetPosition);
-        telemetry.addData("g / p", "%7d, %7d", g, p);
-        telemetry.update();
-    }
-
-    public void faShe() {
-        flyWheelTargetVelocity = 1980;
-        angleServoPosition = 1;
-        rotateMotorTargetPosition += (step - errorPosition);//转到准备发射位置
-        sleep(3000);
-        if (oldId == 21) {
-            greenBall();
-            flyWheelTargetVelocity = 1980;
-            purpleBall();
-            purpleBall();
-        }
-        if (oldId == 22) {
-            purpleBall();
-            flyWheelTargetVelocity = 1980;
-            greenBall();
-            purpleBall();
-        }
-        if (oldId == 23) {
-            purpleBall();
-            flyWheelTargetVelocity = 1980;
-            purpleBall();
-            greenBall();
-        }
-        flyWheelTargetVelocity = 0;
-    }
-
-    public void greenBall() {
-        g = 2;
-        runtime.reset();
-        while (opModeIsActive() && runtime.seconds() <= while_time) {
-            if (g == 1) break;
-        }
-        g = 1;
-        strikerServoPosition = strikerServoUpPosition;
-        sleep(upTime);
-        strikerServoPosition = strikerServoDownPosition;
-        sleep(downTime);
-    }
-
-    public void purpleBall() {
-        p = 2;
-        runtime.reset();
-        while (opModeIsActive() && runtime.seconds() <= while_time) {
-            if (p == 1) break;
-        }
-        p = 1;
-        strikerServoPosition = strikerServoUpPosition;
-        sleep(upTime);
-        strikerServoPosition = strikerServoDownPosition;
-        sleep(downTime);
-    }
-
     //相机线程
     public class camera extends Thread {
         public static final boolean USE_WEBCAM = true;
         public AprilTagProcessor aprilTag;
         public VisionPortal visionPortal;
         public boolean streamingStopped = true;
-
         public void run() {
             initAprilTag();
             // 不在子线程调用 waitForStart()，避免与主线程冲突
@@ -273,7 +202,6 @@ public class RED_2 extends LinearOpMode {
                 throw new RuntimeException(e);
             }
         }
-
         public void initAprilTag() {
 
             // 创建 AprilTag 处理器实例。
@@ -348,7 +276,6 @@ public class RED_2 extends LinearOpMode {
 
 
         }
-
         public void telemetryAprilTag() {
             // 获取当前检测列表并显示数量。
             List<AprilTagDetection> currentDetections = aprilTag.getDetections();
@@ -382,7 +309,6 @@ public class RED_2 extends LinearOpMode {
             //telemetry.addLine("- XYZ: 3D空间坐标 (X, Y, Z)，单位英寸，表示AprilTag相对于摄像头的位置\n" + "   - PRY: 姿态角 (Pitch, Roll, Yaw)，单位度，表示AprilTag的旋转状态\n" + "   - RBE: 距离-方位-仰角 (Range, Bearing, Elevation)，单位英寸和度，表示AprilTag相对于摄像头的球坐标系位置\n");
         }
     }
-
     public class colorSensor extends Thread {
         public void run() {
             try {
@@ -466,7 +392,6 @@ public class RED_2 extends LinearOpMode {
             }
         }
     }
-
     public class servo_xiMotor extends Thread {
         public void run() {
             try {
@@ -527,7 +452,6 @@ public class RED_2 extends LinearOpMode {
             }
         }
     }
-
     public class setRotateMotorPositionThread extends Thread {
         public void run() {
             try {
@@ -626,5 +550,78 @@ public class RED_2 extends LinearOpMode {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    public void xiBall() {
+        rotateMotorTargetPosition += (step + errorPosition);//转到准备发射位置
+        sleep(1000);
+        xiMotorPower = 1.0;
+        b = 2;
+        c = 0;
+    }
+
+    public void show() {
+        telemetry.clear();
+        telemetry.addData("ID", "%7d", oldId);
+        telemetry.addData("球颜色 前/左/右", "%s, %s, %s", colorFront, colorLeft, colorRight);
+        telemetry.addData("左飞轮功率/转速", "%4.2f, %4.2f", robot.flyWheelLeft.getPower(), robot.flyWheelLeft.getVelocity());
+        telemetry.addData("右飞轮功率/转速", "%4.2f, %4.2f", robot.flyWheelRight.getPower(), robot.flyWheelRight.getVelocity());
+        telemetry.addData("旋转误差", "%7d", rotateError);
+        telemetry.addData("旋转位置", "%7d", rotateMotorCurrentPosition);
+        telemetry.addData("目标位置 ", "%7d", rotateMotorTargetPosition);
+        telemetry.addData("g / p", "%7d, %7d", g, p);
+        telemetry.update();
+    }
+
+    public void faShe() {
+        flyWheelTargetVelocity = 1980;
+        angleServoPosition = 1;
+        rotateMotorTargetPosition += (step - errorPosition);//转到准备发射位置
+        sleep(3000);
+        if (oldId == 21) {
+            greenBall();
+            flyWheelTargetVelocity = 1980;
+            purpleBall();
+            purpleBall();
+        }
+        if (oldId == 22) {
+            purpleBall();
+            flyWheelTargetVelocity = 1980;
+            greenBall();
+            purpleBall();
+        }
+        if (oldId == 23) {
+            purpleBall();
+            flyWheelTargetVelocity = 1980;
+            purpleBall();
+            greenBall();
+        }
+        flyWheelTargetVelocity = 0;
+    }
+
+    public void greenBall() {
+        g = 2;
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds() <= while_time) {
+            if (g == 1) break;
+        }
+        g = 1;
+        strikerServoPosition = strikerServoUpPosition;
+        sleep(upTime);
+        strikerServoPosition = strikerServoDownPosition;
+        sleep(downTime);
+    }
+
+    public void purpleBall() {
+        p = 2;
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds() <= while_time) {
+            if (p == 1) break;
+        }
+        p = 1;
+        strikerServoPosition = strikerServoUpPosition;
+        sleep(upTime);
+        strikerServoPosition = strikerServoDownPosition;
+        sleep(downTime);
     }
 }
