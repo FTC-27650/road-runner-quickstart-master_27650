@@ -3,14 +3,17 @@ package org.firstinspires.ftc.teamcode.FTC_27650_TeleOp;
 import android.graphics.Color;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
@@ -18,10 +21,10 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.List;
 
 
-@TeleOp(name = "手动27650——new_red", group = "LinearOpmode")
+@TeleOp(name = "手动27650_blue", group = "LinearOpmode")
 @Config
-//@Disabled
-public class MecanumWheel_new_red extends LinearOpMode {
+@Disabled
+public class MecanumWheel_blue extends LinearOpMode {
 
     public static int rotateMotorMaxErrorPosition = 100;//2;
     public static int errorPosition = 1422;//13;
@@ -50,10 +53,13 @@ public class MecanumWheel_new_red extends LinearOpMode {
     volatile String colorFront = "无";
     volatile String colorLeft = "无";
     volatile String colorRight = "无";
+    volatile double distanceFront = 0;
+    volatile double distanceLeft = 0;
+    volatile double distanceRight = 0;
     MyRobotHardware_27650_TeleOp robot = new MyRobotHardware_27650_TeleOp(this);
     setRotateMotorPositionThread setRotateMotorPositionThread = new setRotateMotorPositionThread();
     camera cameraThread = new camera();
-    double strikerServoUpPosition = 0.09;//角度舵机
+    double strikerServoUpPosition = 0.15;//角度舵机
     volatile double strikerServoPosition = strikerServoDownPosition;
     volatile double angleServoPosition = 0; //初始化位置
     double angleServoSpeed = 0.01;
@@ -68,7 +74,6 @@ public class MecanumWheel_new_red extends LinearOpMode {
     volatile boolean camUsing = false;
     volatile double range = 0, angleZ = 0, angleY = 0;
     volatile int id = 0;
-    public static double anglekp = 0.20;
 
     @Override
     public void runOpMode() {
@@ -120,6 +125,7 @@ public class MecanumWheel_new_red extends LinearOpMode {
         telemetry.addData("Gain", gain);
         telemetry.addData("色调 前/左/右", "%.3f,%.3f, %.3f", hsvValuesFront[0], hsvValuesLeft[0], hsvValuesRight[0]);
         telemetry.addData("饱和度 前/左/右", "%.3f,%.3f, %.3f", hsvValuesFront[1], hsvValuesLeft[1], hsvValuesRight[1]);
+        telemetry.addData("距离 前/左/右", "%.3f,%.3f, %.3f", distanceFront, distanceLeft, distanceRight);
         telemetry.addData("Value 前/左/右", "%.3f,%.3f, %.3f", hsvValuesFront[2], hsvValuesLeft[2], hsvValuesRight[2]);
         telemetry.addData("球颜色 前/左/右", "%s, %s, %s", colorFront, colorLeft, colorRight);
         telemetry.addData("磁性限位开关 in", " %b", robot.magnetic_in.isPressed());
@@ -207,11 +213,20 @@ public class MecanumWheel_new_red extends LinearOpMode {
         Color.colorToHSV(colorsLeft.toColor(), hsvValuesLeft);
         Color.colorToHSV(colorsRight.toColor(), hsvValuesRight);
 
+        distanceFront = ((DistanceSensor) robot.colorSensorFront).getDistance(DistanceUnit.CM);
+        distanceLeft = ((DistanceSensor) robot.colorSensorLeft).getDistance(DistanceUnit.CM);
+        distanceRight = ((DistanceSensor) robot.colorSensorRight).getDistance(DistanceUnit.CM);
+
         // 前边颜色传感器
-        if (hsvValuesFront[2] != 0 || hsvValuesFront[1] != 0 || hsvValuesFront[0] != 0) {
-            if ((greenMin <= hsvValuesFront[0] && hsvValuesFront[0] <= greenMax) && (0.15 < hsvValuesFront[1] && hsvValuesFront[1] < 0.95) && hsvValuesFront[1] > 0.01) { // 增加饱和度阈值
+        if ((hsvValuesFront[2] != 0 || hsvValuesFront[1] != 0 || hsvValuesFront[0] != 0)
+                && distanceFront <= 2.5) {
+            if ((greenMin <= hsvValuesFront[0] && hsvValuesFront[0] <= greenMax)
+                    && (0.15 < hsvValuesFront[1] && hsvValuesFront[1] < 0.95)
+                    && hsvValuesFront[1] > 0.01) { // 增加饱和度阈值
                 colorFront = "green";
-            } else if ((purpleMin <= hsvValuesFront[0] && hsvValuesFront[0] <= purpleMax) && (0.15 < hsvValuesFront[1] && hsvValuesFront[1] < 0.95) && hsvValuesFront[1] > 0.01) {
+            } else if ((purpleMin <= hsvValuesFront[0] && hsvValuesFront[0] <= purpleMax)
+                    && (0.15 < hsvValuesFront[1] && hsvValuesFront[1] < 0.95)
+                    && hsvValuesFront[1] > 0.01) {
                 colorFront = "purple";
             } else {
                 colorFront = "有";
@@ -220,24 +235,34 @@ public class MecanumWheel_new_red extends LinearOpMode {
             colorFront = "无";
         }
         // 左边颜色传感器
-        if (hsvValuesLeft[2] <= 0.01 && hsvValuesLeft[0] <= 130 && (hsvValuesLeft[1] == 1) || hsvValuesLeft[1] == 0) {
+        if (hsvValuesLeft[2] <= 0.01 && hsvValuesLeft[0] <= 130
+                && (hsvValuesLeft[1] == 1) || hsvValuesLeft[1] == 0) {
             colorLeft = "无";
         } else {
-            if ((greenMin <= hsvValuesLeft[0] && hsvValuesLeft[0] <= greenMax) && (0.15 < hsvValuesLeft[1] && hsvValuesLeft[1] < 0.95) && hsvValuesLeft[1] > 0.01) { // 增加饱和度阈值
+            if ((greenMin <= hsvValuesLeft[0] && hsvValuesLeft[0] <= greenMax)
+                    && (0.15 < hsvValuesLeft[1] && hsvValuesLeft[1] < 0.95)
+                    && hsvValuesLeft[1] > 0.01 && distanceLeft <= 2.5) { // 增加饱和度阈值
                 colorLeft = "green";
-            } else if ((purpleMin <= hsvValuesLeft[0] && hsvValuesLeft[0] <= purpleMax) && (0.15 < hsvValuesLeft[1] && hsvValuesLeft[1] < 0.95) && hsvValuesLeft[1] > 0.01) {
+            } else if ((purpleMin <= hsvValuesLeft[0] && hsvValuesLeft[0] <= purpleMax)
+                    && (0.15 < hsvValuesLeft[1] && hsvValuesLeft[1] < 0.95)
+                    && hsvValuesLeft[1] > 0.01 && distanceLeft <= 2.5) {
                 colorLeft = "purple";
             } else {
                 colorLeft = "有";
             }
         }
         // 右边颜色传感器
-        if (hsvValuesRight[2] <= 0.01 && hsvValuesRight[0] <= 130 && (hsvValuesRight[1] == 1 || hsvValuesRight[1] == 0)) {
+        if (hsvValuesRight[2] <= 0.01 && hsvValuesRight[0] <= 130
+                && (hsvValuesRight[1] == 1 || hsvValuesRight[1] == 0)) {
             colorRight = "无";
         } else {
-            if ((greenMin <= hsvValuesRight[0] && hsvValuesRight[0] <= greenMax) && (0.15 < hsvValuesRight[1] && hsvValuesRight[1] < 0.95) && hsvValuesRight[1] > 0.01) { // 增加饱和度阈值
+            if ((greenMin <= hsvValuesRight[0] && hsvValuesRight[0] <= greenMax)
+                    && (0.15 < hsvValuesRight[1] && hsvValuesRight[1] < 0.95)
+                    && hsvValuesRight[1] > 0.01 && distanceRight <= 2.5) { // 增加饱和度阈值
                 colorRight = "green";
-            } else if ((purpleMin <= hsvValuesRight[0] && hsvValuesRight[0] <= purpleMax) && (0.15 < hsvValuesRight[1] && hsvValuesRight[1] < 0.95) && hsvValuesRight[1] > 0.01) {
+            } else if ((purpleMin <= hsvValuesRight[0] && hsvValuesRight[0] <= purpleMax)
+                    && (0.15 < hsvValuesRight[1] && hsvValuesRight[1] < 0.95)
+                    && hsvValuesRight[1] > 0.01 && distanceRight <= 2.5) {
                 colorRight = "purple";
             } else {
                 colorRight = "有";
@@ -401,7 +426,7 @@ public class MecanumWheel_new_red extends LinearOpMode {
 
                     buttonControlRotateMotor();
 
-                    rotateMotorCurrentPosition = -robot.rotateMotor.getCurrentPosition();
+                    rotateMotorCurrentPosition = robot.rotateMotor.getCurrentPosition();
 
                     error = rotateMotorTargetPosition - rotateMotorCurrentPosition;
                     ki += error * dt;
@@ -491,6 +516,7 @@ public class MecanumWheel_new_red extends LinearOpMode {
         public static final boolean USE_WEBCAM = true;
         public AprilTagProcessor aprilTag;
         public VisionPortal visionPortal;
+        public boolean streamingStopped = true;
 
         public void run() {
             initAprilTag();
@@ -501,17 +527,17 @@ public class MecanumWheel_new_red extends LinearOpMode {
                     if (camUsing) {
                         telemetryAprilTag();
                         telemetry.update();
-                        if (aprilTag.getDetections().size() == 1 && id == 24) {
+                        if (aprilTag.getDetections().size() == 1 && id == 20) {
                             if (range < 33.5) {
                                 flyWheelTargetVelocity = 1420;
                                 angleServoPosition = 0;
                             } else if (33.5 <= range && range <= 95) {
                                 flyWheelTargetVelocity = 1220 + (range) * 4.5;
-                                angleServoPosition = 0.012 * range - anglekp;
+                                angleServoPosition = 0.012 * range - 0.30;
                                 //flyWheelTargetVelocity = 1200+(range)*5;
                                 //angleServoPosition = 0.013*range-0.44;
                             } else if (115 <= range) {
-                                flyWheelTargetVelocity = 2025;
+                                flyWheelTargetVelocity = 1980;
                                 angleServoPosition = 1;
                             }
                         }

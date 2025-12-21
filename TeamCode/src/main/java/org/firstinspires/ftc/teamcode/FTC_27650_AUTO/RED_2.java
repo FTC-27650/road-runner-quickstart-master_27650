@@ -37,8 +37,8 @@ public class RED_2 extends LinearOpMode {
     servo_xiMotor servo_xiMotorThread = new servo_xiMotor();
     setFlyMotorVelocity setFlyMotorVelocity = new setFlyMotorVelocity();
     setRotateMotorPositionThread setRotateMotorPositionThread = new setRotateMotorPositionThread();
-    public static double purpleMin = 215, purpleMax = 260;
     public static volatile double flyWheelTargetVelocity = 0;
+    public static double purpleMin = 215, purpleMax = 260;
     public static double fly_kp = 0.01;
     public static double fly_ki = 0.05;
     public static double fly_kd = 0.000005;
@@ -70,13 +70,13 @@ public class RED_2 extends LinearOpMode {
     volatile int rotateMotorTargetPosition = 0;
     int rotateError = 0;
     volatile double rotateMotorPower = 0;
-    public static double rotate_kd = 0.0000006;//0.001;
-    public static double ki_max = 5000;
-    public static double kf = 0;
     final float[] hsvValuesFront = new float[3]; // 1前面色调 2饱和度
     final float[] hsvValuesLeft = new float[3]; // 1左边色调 2饱和度
     final float[] hsvValuesRight = new float[3];// 1右边色调 2饱和度
     private ElapsedTime runtime = new ElapsedTime();
+    public static double rotate_kd = 0.0000006;//0.001;
+    public static double ki_max = 5000;
+    public static double kf = 0;
     volatile int step = 2731;
     double rotateMotorMinPower = 0.1;
     double rotateMotorMaxPower = 0.8;

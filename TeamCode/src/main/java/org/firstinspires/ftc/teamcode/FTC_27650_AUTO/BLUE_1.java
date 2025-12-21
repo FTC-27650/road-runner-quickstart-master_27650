@@ -89,7 +89,6 @@ public class BLUE_1 extends LinearOpMode {
     volatile int upTime = 400;
     private ElapsedTime runtime = new ElapsedTime();
     double while_time = 3;
-
     @Override
     public void runOpMode() throws InterruptedException {
         robot.init();
@@ -392,6 +391,66 @@ public class BLUE_1 extends LinearOpMode {
             }
         }
     }
+    public class servo_xiMotor extends Thread {
+        public void run() {
+            try {
+                while (opModeIsActive()) {
+                    robot.strikerServo.setPosition(strikerServoPosition);
+                    robot.angleServo.setPosition(angleServoPosition);
+                    robot.xiMotor.setPower(xiMotorPower);
+                    //sleep(5);
+                }
+                sleep(5);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    public class setFlyMotorVelocity extends Thread {
+        public void run() {
+            try {
+                double error = 0;
+                double lastError = 0;
+                double ki = 0;
+                double kd = 0;
+                // 在setRotateMotorPositionThread中使用固定周期控制
+                ElapsedTime loopTimer = new ElapsedTime();
+                final double loopPeriod = 0.01; // 10ms周期
+                while (opModeIsActive()) {
+
+                    double dt = loopTimer.seconds();
+                    loopTimer.reset();
+
+                    flyWheelCurrentVelocity = 0.5 * (robot.flyWheelLeft.getVelocity() + robot.flyWheelRight.getVelocity());
+
+                    error = flyWheelTargetVelocity - flyWheelCurrentVelocity;
+                    ki += error * dt;
+                    // 误差过小时清除积分（避免静态误差累积）
+                    if (Math.abs(error) < rotateMotorMaxErrorPosition * 2) ki = 0;
+                    //ki = Math.max(-ki_max, Math.min(ki, ki_max));  // 根据实际情况调整上下限
+                    kd = (error - lastError) / dt;
+
+                    double flyPower = error * fly_kp + ki * fly_ki + kd * fly_kd;
+
+                    //robot.flyWheelLeft.setPower(flyPower);
+                    //robot.flyWheelRight.setPower(flyPower);
+                    robot.flyWheelLeft.setVelocity(flyWheelTargetVelocity);
+                    robot.flyWheelRight.setVelocity(flyWheelTargetVelocity);
+                    lastError = error;
+
+                    sleep(Math.max(0, 10 - (long) (dt * 1000)));  // 确保总周期约10ms
+                    // 确保周期稳定（补全不足的时间）
+                    double elapsed = loopTimer.seconds();
+                    if (elapsed < loopPeriod) {
+                        sleep((long) ((loopPeriod - elapsed) * 1000));
+                    }
+                }
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 
     public void xiBall() {
         rotateMotorTargetPosition += (step + errorPosition);//转到准备发射位置
@@ -461,67 +520,6 @@ public class BLUE_1 extends LinearOpMode {
         sleep(upTime);
         strikerServoPosition = strikerServoDownPosition;
         sleep(downTime);
-    }
-
-    public class servo_xiMotor extends Thread {
-        public void run() {
-            try {
-                while (opModeIsActive()) {
-                    robot.strikerServo.setPosition(strikerServoPosition);
-                    robot.angleServo.setPosition(angleServoPosition);
-                    robot.xiMotor.setPower(xiMotorPower);
-                    //sleep(5);
-                }
-                sleep(5);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    public class setFlyMotorVelocity extends Thread {
-        public void run() {
-            try {
-                double error = 0;
-                double lastError = 0;
-                double ki = 0;
-                double kd = 0;
-                // 在setRotateMotorPositionThread中使用固定周期控制
-                ElapsedTime loopTimer = new ElapsedTime();
-                final double loopPeriod = 0.01; // 10ms周期
-                while (opModeIsActive()) {
-
-                    double dt = loopTimer.seconds();
-                    loopTimer.reset();
-
-                    flyWheelCurrentVelocity = 0.5 * (robot.flyWheelLeft.getVelocity() + robot.flyWheelRight.getVelocity());
-
-                    error = flyWheelTargetVelocity - flyWheelCurrentVelocity;
-                    ki += error * dt;
-                    // 误差过小时清除积分（避免静态误差累积）
-                    if (Math.abs(error) < rotateMotorMaxErrorPosition * 2) ki = 0;
-                    //ki = Math.max(-ki_max, Math.min(ki, ki_max));  // 根据实际情况调整上下限
-                    kd = (error - lastError) / dt;
-
-                    double flyPower = error * fly_kp + ki * fly_ki + kd * fly_kd;
-
-                    //robot.flyWheelLeft.setPower(flyPower);
-                    //robot.flyWheelRight.setPower(flyPower);
-                    robot.flyWheelLeft.setVelocity(flyWheelTargetVelocity);
-                    robot.flyWheelRight.setVelocity(flyWheelTargetVelocity);
-                    lastError = error;
-
-                    sleep(Math.max(0, 10 - (long) (dt * 1000)));  // 确保总周期约10ms
-                    // 确保周期稳定（补全不足的时间）
-                    double elapsed = loopTimer.seconds();
-                    if (elapsed < loopPeriod) {
-                        sleep((long) ((loopPeriod - elapsed) * 1000));
-                    }
-                }
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
     }
 
     public class setRotateMotorPositionThread extends Thread {
