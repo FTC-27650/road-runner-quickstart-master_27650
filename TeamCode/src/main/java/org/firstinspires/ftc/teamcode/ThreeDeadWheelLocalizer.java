@@ -21,18 +21,21 @@ import org.firstinspires.ftc.teamcode.messages.ThreeDeadWheelInputsMessage;
 
 @Config
 public final class ThreeDeadWheelLocalizer implements Localizer {
-    public static Params PARAMS = new Params();
-    public final Encoder par0, par1, perp;
-    public final double inPerTick;
-    private int lastPar0Pos, lastPar1Pos, lastPerpPos;
-    private boolean initialized;
-    private Pose2d pose;
-
     public static class Params {
         public double par0YTicks = -11802.724768670125; // y position of the first parallel encoder (in tick units)
         public double par1YTicks = 11696.082969285966; // y position of the second parallel encoder (in tick units)
         public double perpXTicks = -11046.49146716867; // x position of the perpendicular encoder (in tick units)
     }
+
+    public static Params PARAMS = new Params();
+
+    public final Encoder par0, par1, perp;
+
+    public final double inPerTick;
+
+    private int lastPar0Pos, lastPar1Pos, lastPerpPos;
+    private boolean initialized;
+    private Pose2d pose;
 
     public ThreeDeadWheelLocalizer(HardwareMap hardwareMap, double inPerTick, Pose2d initialPose) {
         // TODO: make sure your config has **motors** with these names (or change them)
