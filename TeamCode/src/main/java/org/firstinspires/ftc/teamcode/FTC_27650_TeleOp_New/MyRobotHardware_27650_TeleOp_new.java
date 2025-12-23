@@ -29,8 +29,8 @@ public class MyRobotHardware_27650_TeleOp_new {
 
     public Servo strikerServo = null;       //servo hub 0 //down:0.186 up:0.384
     public Servo angleServo = null;         //servo hub 1 //down:0 up:1
-    public Servo leftRotateServo = null;    //servo hub 2
-    public Servo rightRotateServo = null;   //servo hub 3
+    public Servo leftTurretServo = null;    //servo hub 2
+    public Servo rightTurretServo = null;   //servo hub 3
 
     public NormalizedColorSensor colorSensorFront;
     public NormalizedColorSensor colorSensorLeft;
@@ -42,10 +42,10 @@ public class MyRobotHardware_27650_TeleOp_new {
     //RevBlinkinLedDriver blinkinLedDriver;
 
     public Limelight3A limelight;
-    public VoltageSensor batterySensor;
     IMU imu;
-    private LinearOpMode myOpMode = null;
+    public VoltageSensor batterySensor;
 
+    private LinearOpMode myOpMode = null;
     public MyRobotHardware_27650_TeleOp_new(LinearOpMode opmode) {
         myOpMode = opmode;
     }
@@ -67,8 +67,8 @@ public class MyRobotHardware_27650_TeleOp_new {
 
         strikerServo = myOpMode.hardwareMap.get(Servo.class, "ss");      //servo hub 0  扳机
         angleServo = myOpMode.hardwareMap.get(Servo.class, "as");        //servo hub 1
-        leftRotateServo = myOpMode.hardwareMap.get(Servo.class, "lrs");  //servo hub 2
-        rightRotateServo = myOpMode.hardwareMap.get(Servo.class, "rrs"); //servo hub 3
+        leftTurretServo = myOpMode.hardwareMap.get(Servo.class, "lrs");  //servo hub 2
+        rightTurretServo = myOpMode.hardwareMap.get(Servo.class, "rrs"); //servo hub 3
 
         colorSensorFront = myOpMode.hardwareMap.get(NormalizedColorSensor.class, "csf");//c I2C 1
         colorSensorLeft = myOpMode.hardwareMap.get(NormalizedColorSensor.class, "csl");//c I2C  2
@@ -119,11 +119,12 @@ public class MyRobotHardware_27650_TeleOp_new {
         RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
 
         imu.initialize(new IMU.Parameters(orientationOnRobot));
+        imu.resetYaw();
 
         flyWheelLeft.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         flyWheelRight.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        flyWheelLeft.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-        flyWheelRight.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        flyWheelLeft.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        flyWheelRight.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
         xiMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         xiMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);

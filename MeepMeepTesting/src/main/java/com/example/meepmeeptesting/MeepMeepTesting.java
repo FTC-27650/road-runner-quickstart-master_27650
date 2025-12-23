@@ -6,12 +6,6 @@ import org.rowlandhall.meepmeep.MeepMeep;
 import org.rowlandhall.meepmeep.roadrunner.DefaultBotBuilder;
 import org.rowlandhall.meepmeep.roadrunner.entity.RoadRunnerBotEntity;
 
-import java.awt.Image;
-import java.io.IOException;
-import java.util.Objects;
-
-import javax.imageio.ImageIO;
-
 public class MeepMeepTesting {
     @SuppressWarnings("FeatureEnvy")
     public static void main(String[] args) {
@@ -25,15 +19,8 @@ public class MeepMeepTesting {
                         .lineToSplineHeading(new Pose2d(50, 50, Math.toRadians(0)))
                         .build());
 
-        Image background;
-        try {
-            background = ImageIO.read(
-                    Objects.requireNonNull(MeepMeep.class.getResourceAsStream("/background/season-2025-decode/field-2025-juice-dark.png"))
-            );
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        meepMeep.setBackground(background)
+
+        meepMeep.setBackground(MeepMeep.Background.FIELD_DECODE_JUICE_DARK)
                 .setDarkMode(true)
                 .setBackgroundAlpha(0.95f)
                 .addEntity(myBot)
