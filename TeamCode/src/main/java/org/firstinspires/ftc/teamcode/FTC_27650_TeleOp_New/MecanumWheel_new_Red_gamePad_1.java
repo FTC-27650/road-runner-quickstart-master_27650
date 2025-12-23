@@ -229,8 +229,16 @@ public class MecanumWheel_new_Red_gamePad_1 extends LinearOpMode {
 
     /**
      * Mecanum轮驱动控制
-     * 实现全向移动算法
+     * 实现全向移动算法，通过坐标变换实现机器人在世界坐标系下的移动
+     *
+     * 算法说明：
+     * 1. 获取游戏手柄输入的x、y、rx值
+     * 2. 通过IMU获取机器人当前航向角
+     * 3. 将输入坐标从机器人坐标系转换到世界坐标系
+     * 4. 使用分母归一化算法分配功率到四个轮子
+     * 5. 支持左保险杠减速功能
      */
+
     public void mecanumDrive() {
         double y = -gamepad1.left_stick_y;
         double x = gamepad1.left_stick_x;
@@ -270,9 +278,15 @@ public class MecanumWheel_new_Red_gamePad_1 extends LinearOpMode {
         robot.bl.setPower(blPower);
     }
 
+
     /**
      * 伺服控制
-     * 处理射球角度和打击机构
+     * 处理射球角度和打击机构的控制
+     *
+     * 功能：
+     * 1. 通过D-pad控制射球角度
+     * 2. 在自动瞄准模式下根据距离调整射球角度
+     * 3. 控制打击机构的上下移动
      */
     public void servoControl() {
         if (rotateMotorTargetPosition % rotationStep == 0) {
@@ -305,6 +319,12 @@ public class MecanumWheel_new_Red_gamePad_1 extends LinearOpMode {
     /**
      * 颜色传感器处理
      * 识别球的颜色并测量距离
+     *
+     * 算法说明：
+     * 1. 通过游戏手柄A/B键调节颜色传感器增益
+     * 2. 获取三个方向颜色传感器的HSV值
+     * 3. 通过HSV颜色空间判断球的颜色（绿色/紫色）
+     * 4. 结合距离传感器判断球的存在
      */
     public void colorSensor() {
         if (gamepad1.a) colorSensorGain += 0.005F;
@@ -371,6 +391,7 @@ public class MecanumWheel_new_Red_gamePad_1 extends LinearOpMode {
 
     /**
      * 吸球电机控制
+     * 控制吸球机构的转速
      */
     public void xiMotor() {
         xiMotorPower = -gamepad2.left_stick_y + XI_MOTOR_MIN_POWER;
@@ -379,6 +400,7 @@ public class MecanumWheel_new_Red_gamePad_1 extends LinearOpMode {
 
     /**
      * 发送LED脉冲信号
+     * 根据不同情况发送不同宽度的脉冲控制LED显示
      */
     private void sendShortPulse(int widthMs) {
         robot.ledPin.setState(false);
@@ -388,6 +410,7 @@ public class MecanumWheel_new_Red_gamePad_1 extends LinearOpMode {
 
     /**
      * 按键控制旋转电机
+     * 处理游戏手柄按键输入，控制旋转电机的各种功能
      */
     public void buttonControlRotateMotor() {
         final int downTime = STRIKER_DOWN_TIME;
@@ -509,6 +532,7 @@ public class MecanumWheel_new_Red_gamePad_1 extends LinearOpMode {
 
     /**
      * 自动射球功能
+     * 自动执行射球动作，连续发射三个球
      */
     public void autoShoot() {
         if (ballProcessingState == 1) {
@@ -550,12 +574,18 @@ public class MecanumWheel_new_Red_gamePad_1 extends LinearOpMode {
 
     /**
      * 安全更新角度伺服位置
+     * 使用AtomicReference保证线程安全的更新操作
      */
     private void updateAngleServoPosition(Function<Double, Double> updateFunction) {
         angleServoPositionRef.updateAndGet((UnaryOperator<Double>) updateFunction);
     }
 
     // 线程类定义
+
+    /**
+     * Mecanum驱动线程
+     * 独立线程处理机器人移动控制，确保移动响应的实时性
+     */
     public class MecanumThread extends Thread {
         public void run() {
             while (opModeIsActive()) {
@@ -564,6 +594,10 @@ public class MecanumWheel_new_Red_gamePad_1 extends LinearOpMode {
         }
     }
 
+    /**
+     * 其他功能线程
+     * 处理伺服控制、颜色检测、吸球电机和状态显示
+     */
     public class OtherThread extends Thread {
         public void run() {
             while (opModeIsActive()) {
@@ -575,6 +609,10 @@ public class MecanumWheel_new_Red_gamePad_1 extends LinearOpMode {
         }
     }
 
+    /**
+     * LED控制线程
+     * 控制LED指示灯显示不同状态
+     */
     public class LedControlThread extends Thread {
         public void run() {
             try {
@@ -607,6 +645,12 @@ public class MecanumWheel_new_Red_gamePad_1 extends LinearOpMode {
     /**
      * 飞轮速度控制线程
      * 使用PID算法控制飞轮转速
+     *
+     * PID控制算法说明：
+     * 1. 根据自动瞄准状态和距离计算目标转速
+     * 2. 计算当前转速与目标转速的误差
+     * 3. 使用PID公式计算输出功率
+     * 4. 实现积分限幅和误差清零功能
      */
     public class SetFlyWheelVelocityThread extends Thread {
         public void run() {
@@ -671,6 +715,13 @@ public class MecanumWheel_new_Red_gamePad_1 extends LinearOpMode {
     /**
      * 旋转电机位置控制线程
      * 使用PID算法控制旋转电机位置
+     *
+     * PID控制算法说明：
+     * 1. 读取当前电机位置
+     * 2. 计算位置误差
+     * 3. 使用PID公式计算输出功率
+     * 4. 根据不同状态执行相应动作
+     * 5. 实现功率限制和积分限幅
      */
     public class SetRotateMotorPositionThread extends Thread {
         public void run() {
@@ -768,6 +819,12 @@ public class MecanumWheel_new_Red_gamePad_1 extends LinearOpMode {
     /**
      * LimeLight线程
      * 处理视觉识别数据
+     *
+     * 视觉识别算法说明：
+     * 1. 获取LimeLight检测结果
+     * 2. 解析fiducial marker信息
+     * 3. 计算机器人到目标的距离
+     * 4. 提供目标的X、Y角度偏移
      */
     public class LimeLightThread extends Thread {
         public void run() {
@@ -803,6 +860,12 @@ public class MecanumWheel_new_Red_gamePad_1 extends LinearOpMode {
     /**
      * 位姿估计和炮台位置设置线程
      * 结合位姿估计和PID控制实现炮台自动瞄准
+     *
+     * 算法说明：
+     * 1. 使用RoadRunner进行位姿估计
+     * 2. 根据是否检测到目标切换PID参数
+     * 3. 使用PID控制炮台转动到目标角度
+     * 4. 实现精确的自动瞄准功能
      */
     public class Pose2dSetTurretPositionThread extends Thread {
         double MAX_TURRET_DEAD_WHEEL_POSITION = 7042;
@@ -927,4 +990,49 @@ public class MecanumWheel_new_Red_gamePad_1 extends LinearOpMode {
             }
         }
     }
+    /*    核心算法详细说明   */
+///1. PID控制算法
+//    基本原理：
+//    P（比例）项：与误差成正比，快速响应误差
+//    I（积分）项：消除稳态误差，累加历史误差
+//    D（微分）项：预测误差变化趋势，减少超调
+//    在代码中的应用：
+//    飞轮速度控制：根据目标转速与实际转速的误差，使用PID计算输出功率
+//    旋转电机位置控制：根据目标位置与实际位置的误差，使用PID计算输出功率
+//    炮台角度控制：根据目标角度与实际角度的误差，使用PID计算输出功率
+//    关键公式：
+//    输出 = Kp * 误差 + Ki * 积分 + Kd * 微分 + Kf * 目标值
+///2. Mecanum驱动算法
+//    坐标变换原理：
+//    从机器人坐标系转换到世界坐标系
+//            使用旋转矩阵进行坐标变换
+//    实现全向移动（前后、左右、旋转）
+//    算法步骤：
+//    1.获取游戏手柄输入（x, y, rx）
+//    2.获取机器人当前航向角
+//    3.使用旋转矩阵进行坐标变换：
+//    rotX = x * cos(-heading) - y * sin(-heading)
+//    rotY = x * sin(-heading) + y * cos(-heading)
+//    4.计算各轮功率分配
+//    5.使用分母归一化确保功率不超过1
+///3. 视觉识别算法
+//    LimeLight视觉系统：
+//    识别Fiducial Markers（标记）
+//    计算目标距离和角度偏移
+//    使用三角函数计算机器人到目标的距离
+//    距离计算公式：
+//    距离 = (目标高度 - 相机高度) / tan(相机角度 + 俯仰角)
+//    颜色识别算法：
+//    使用HSV颜色空间进行颜色识别
+//    设置绿色和紫色的色调范围
+//    结合饱和度和距离阈值提高识别准确性
+///4. 多线程并发控制
+//    线程设计：
+//    每个主要功能模块使用独立线程
+//    确保各功能模块的实时性
+//    使用volatile和AtomicReference保证线程安全
+//    线程同步机制：
+//    使用固定周期控制确保稳定运行
+//    在关键操作中使用原子操作
+//    合理使用sleep确保系统性能
 }
