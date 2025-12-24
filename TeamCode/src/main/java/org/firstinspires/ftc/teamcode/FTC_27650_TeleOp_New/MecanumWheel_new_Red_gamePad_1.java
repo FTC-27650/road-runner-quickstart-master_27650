@@ -69,7 +69,6 @@ public class MecanumWheel_new_Red_gamePad_1 extends LinearOpMode {
     volatile double distanceFront = 0, distanceLeft = 0, distanceRight = 0;
     volatile double strikerServoPosition = strikerServoDownPosition;
     double angleServoSpeed = 0.02;
-    volatile double leftTurretServoPosition = 0.5, rightTurretServoPosition = 0.5;
     double flyWheel_kp = 7, flyWheel_ki = 1.5, flyWheel_kd = 0.05;
     double flyWheel_max = 600, flyWheel_kf = 1;
     volatile double flyWheelCurrentVelocity = 0;
