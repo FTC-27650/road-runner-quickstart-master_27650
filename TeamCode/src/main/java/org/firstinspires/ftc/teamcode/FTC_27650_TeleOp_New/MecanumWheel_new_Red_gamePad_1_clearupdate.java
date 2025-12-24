@@ -417,7 +417,6 @@ public class MecanumWheel_new_Red_gamePad_1_clearupdate extends LinearOpMode {
      */
     public void buttonControlRotateMotor() {
         final int downTime = STRIKER_DOWN_TIME;
-
         // 控制进球转到下一步
         if (gamepad1.left_bumper) {
             while (gamepad1.left_bumper) sleep(10);
@@ -431,7 +430,6 @@ public class MecanumWheel_new_Red_gamePad_1_clearupdate extends LinearOpMode {
             purpleBallState = 1;
             isLedColorActive = false;
         }
-
         // 控制进球装置进入自动旋转模式
         if (gamepad1.left_trigger > 0.1) {
             while (gamepad1.left_trigger > 0.1) sleep(10);
@@ -446,7 +444,6 @@ public class MecanumWheel_new_Red_gamePad_1_clearupdate extends LinearOpMode {
             purpleBallState = 1;
             isLedColorActive = false;
         }
-
         // 控制射球转到下一步
         if (gamepad1.right_bumper) {
             while (gamepad1.right_bumper) sleep(10);
@@ -461,7 +458,6 @@ public class MecanumWheel_new_Red_gamePad_1_clearupdate extends LinearOpMode {
             purpleBallState = 1;
             isLedColorActive = true;
         }
-
         // 控制射球直到看到绿色球
         if (gamepad1.dpad_left) {
             while (gamepad1.dpad_left) sleep(10);
@@ -480,7 +476,6 @@ public class MecanumWheel_new_Red_gamePad_1_clearupdate extends LinearOpMode {
             purpleBallState = 1;
             isLedColorActive = true;
         }
-
         // 控制射球直到看到紫色球
         if (gamepad1.dpad_right) {
             while (gamepad1.dpad_right) sleep(10);
@@ -499,13 +494,11 @@ public class MecanumWheel_new_Red_gamePad_1_clearupdate extends LinearOpMode {
             purpleBallState = 2;
             isLedColorActive = true;
         }
-
         // 自动射三球
         if (gamepad1.y) {
             while (gamepad1.y) sleep(10);
             autoShoot();
         }
-
         // 手动抬自动落
         if (gamepad1.dpad_up) {
             while (gamepad1.dpad_up) {
@@ -516,16 +509,13 @@ public class MecanumWheel_new_Red_gamePad_1_clearupdate extends LinearOpMode {
             strikerServoPosition = STRIKER_SERVO_DOWN_POSITION;
             sleep(STRIKER_UP_TIME);
         }
-
         // 手动下降
         if (gamepad1.dpad_down) strikerServoPosition = STRIKER_SERVO_DOWN_POSITION;
-
         // 启动自瞄系统
         if (gamepad1.a || ballCount == 3) {
             isTurretAutoAimingActive = true;
             XI_MOTOR_MIN_POWER = 0;
         }
-
         // 一键转盘初始化
         if (gamepad1.x) {
             while (gamepad1.x) sleep(10);

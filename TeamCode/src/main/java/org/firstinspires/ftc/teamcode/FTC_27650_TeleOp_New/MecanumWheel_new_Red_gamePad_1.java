@@ -90,10 +90,8 @@ public class MecanumWheel_new_Red_gamePad_1 extends LinearOpMode {
     volatile double CarHeading = 0;//车辆imu实时角度
     volatile double turretTargetAngle = 0;//炮台目标角度
     double TurretKp = 0, TurretKi = 0, TurretKd = 0, TurretkiMax = 0, TurrentMinErrorSetZero = 0;
-    double TurretKpNotSee = 0.02, TurretKiNotSee = 0.025, TurretKdNotSee = 0.00005,
-            TurretkiMaxNotSee = 20, TurrentMinErrorSetZeroNotSee = 3;
-    double TurretKpSee = 0.003, TurretKiSee = 0.003, TurretKdSee = 0.00005,
-            TurretkiMaxSee = 20, TurrentMinErrorSetZeroSee = 3;
+    double TurretKpNotSee = 0.02, TurretKiNotSee = 0.025, TurretKdNotSee = 0.00005, TurretkiMaxNotSee = 20, TurrentMinErrorSetZeroNotSee = 3;
+    double TurretKpSee = 0.003, TurretKiSee = 0.003, TurretKdSee = 0.00005, TurretkiMaxSee = 20, TurrentMinErrorSetZeroSee = 3;
     volatile double TurretPower = 0;
 
     // 以特定姿势实例化您的 MecanumDrive
@@ -297,34 +295,24 @@ public class MecanumWheel_new_Red_gamePad_1 extends LinearOpMode {
 
         }
         // 左边颜色传感器
-        if (hsvValuesLeft[2] <= 0.01 && hsvValuesLeft[0] <= 130
-                && (hsvValuesLeft[1] == 1) || hsvValuesLeft[1] == 0) {
+        if (hsvValuesLeft[2] <= 0.01 && hsvValuesLeft[0] <= 130 && (hsvValuesLeft[1] == 1) || hsvValuesLeft[1] == 0) {
             colorLeft = "无";
         } else {
-            if ((greenMin <= hsvValuesLeft[0] && hsvValuesLeft[0] <= greenMax)
-                    && (0.15 < hsvValuesLeft[1] && hsvValuesLeft[1] < 0.95)
-                    && hsvValuesLeft[1] > 0.01 && distanceLeft <= 2.5) { // 增加饱和度阈值
+            if ((greenMin <= hsvValuesLeft[0] && hsvValuesLeft[0] <= greenMax) && (0.15 < hsvValuesLeft[1] && hsvValuesLeft[1] < 0.95) && hsvValuesLeft[1] > 0.01 && distanceLeft <= 2.5) { // 增加饱和度阈值
                 colorLeft = "green";
-            } else if ((purpleMin <= hsvValuesLeft[0] && hsvValuesLeft[0] <= purpleMax)
-                    && (0.15 < hsvValuesLeft[1] && hsvValuesLeft[1] < 0.95)
-                    && hsvValuesLeft[1] > 0.01 && distanceLeft <= 2.5) {
+            } else if ((purpleMin <= hsvValuesLeft[0] && hsvValuesLeft[0] <= purpleMax) && (0.15 < hsvValuesLeft[1] && hsvValuesLeft[1] < 0.95) && hsvValuesLeft[1] > 0.01 && distanceLeft <= 2.5) {
                 colorLeft = "purple";
             } else {
                 colorLeft = "有";
             }
         }
         // 右边颜色传感器
-        if (hsvValuesRight[2] <= 0.01 && hsvValuesRight[0] <= 130
-                && (hsvValuesRight[1] == 1 || hsvValuesRight[1] == 0)) {
+        if (hsvValuesRight[2] <= 0.01 && hsvValuesRight[0] <= 130 && (hsvValuesRight[1] == 1 || hsvValuesRight[1] == 0)) {
             colorRight = "无";
         } else {
-            if ((greenMin <= hsvValuesRight[0] && hsvValuesRight[0] <= greenMax)
-                    && (0.15 < hsvValuesRight[1] && hsvValuesRight[1] < 0.95)
-                    && hsvValuesRight[1] > 0.01 && distanceRight <= 2.5) { // 增加饱和度阈值
+            if ((greenMin <= hsvValuesRight[0] && hsvValuesRight[0] <= greenMax) && (0.15 < hsvValuesRight[1] && hsvValuesRight[1] < 0.95) && hsvValuesRight[1] > 0.01 && distanceRight <= 2.5) { // 增加饱和度阈值
                 colorRight = "green";
-            } else if ((purpleMin <= hsvValuesRight[0] && hsvValuesRight[0] <= purpleMax)
-                    && (0.15 < hsvValuesRight[1] && hsvValuesRight[1] < 0.95)
-                    && hsvValuesRight[1] > 0.01 && distanceRight <= 2.5) {
+            } else if ((purpleMin <= hsvValuesRight[0] && hsvValuesRight[0] <= purpleMax) && (0.15 < hsvValuesRight[1] && hsvValuesRight[1] < 0.95) && hsvValuesRight[1] > 0.01 && distanceRight <= 2.5) {
                 colorRight = "purple";
             } else {
                 colorRight = "有";
@@ -589,8 +577,7 @@ public class MecanumWheel_new_Red_gamePad_1 extends LinearOpMode {
                     ki = Math.max(-flyWheel_max, Math.min(ki, flyWheel_max));  // 根据实际情况调整上下限
                     kd = (error - old_error) / dt;
 
-                    flyWheelVelocity = error * flyWheel_kp + ki * flyWheel_ki + kd * flyWheel_kd
-                            + flyWheelTargetVelocity * flyWheel_kf;
+                    flyWheelVelocity = error * flyWheel_kp + ki * flyWheel_ki + kd * flyWheel_kd + flyWheelTargetVelocity * flyWheel_kf;
 
                     //flyWheelVelocity = flyWheelVelocity*(12/robot.batterySensor.getVoltage());
 
