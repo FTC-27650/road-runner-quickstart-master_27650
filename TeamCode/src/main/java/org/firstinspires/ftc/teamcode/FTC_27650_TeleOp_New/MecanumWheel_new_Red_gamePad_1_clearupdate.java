@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
@@ -25,9 +26,11 @@ import java.util.function.UnaryOperator;
  * FTC 27650 红队手动控制模式
  * 实现了Mecanum轮全向移动、球类处理、视觉识别、自动瞄准等功能
  */
+@Disabled
 @TeleOp(name = "手动27650_new_red_手柄1", group = "LinearOpmode")
 @Config
-public class MecanumWheel_new_Red_gamePad_1 extends LinearOpMode {
+
+public class MecanumWheel_new_Red_gamePad_1_clearupdate extends LinearOpMode {
 
     // 旋转电机PID控制参数
     public static int ROTATE_MOTOR_MAX_ERROR_POSITION = 100;
@@ -230,7 +233,7 @@ public class MecanumWheel_new_Red_gamePad_1 extends LinearOpMode {
     /**
      * Mecanum轮驱动控制
      * 实现全向移动算法，通过坐标变换实现机器人在世界坐标系下的移动
-     *
+     * <p>
      * 算法说明：
      * 1. 获取游戏手柄输入的x、y、rx值
      * 2. 通过IMU获取机器人当前航向角
@@ -282,7 +285,7 @@ public class MecanumWheel_new_Red_gamePad_1 extends LinearOpMode {
     /**
      * 伺服控制
      * 处理射球角度和打击机构的控制
-     *
+     * <p>
      * 功能：
      * 1. 通过D-pad控制射球角度
      * 2. 在自动瞄准模式下根据距离调整射球角度
@@ -319,7 +322,7 @@ public class MecanumWheel_new_Red_gamePad_1 extends LinearOpMode {
     /**
      * 颜色传感器处理
      * 识别球的颜色并测量距离
-     *
+     * <p>
      * 算法说明：
      * 1. 通过游戏手柄A/B键调节颜色传感器增益
      * 2. 获取三个方向颜色传感器的HSV值
@@ -645,7 +648,7 @@ public class MecanumWheel_new_Red_gamePad_1 extends LinearOpMode {
     /**
      * 飞轮速度控制线程
      * 使用PID算法控制飞轮转速
-     *
+     * <p>
      * PID控制算法说明：
      * 1. 根据自动瞄准状态和距离计算目标转速
      * 2. 计算当前转速与目标转速的误差
@@ -715,7 +718,7 @@ public class MecanumWheel_new_Red_gamePad_1 extends LinearOpMode {
     /**
      * 旋转电机位置控制线程
      * 使用PID算法控制旋转电机位置
-     *
+     * <p>
      * PID控制算法说明：
      * 1. 读取当前电机位置
      * 2. 计算位置误差
@@ -819,7 +822,7 @@ public class MecanumWheel_new_Red_gamePad_1 extends LinearOpMode {
     /**
      * LimeLight线程
      * 处理视觉识别数据
-     *
+     * <p>
      * 视觉识别算法说明：
      * 1. 获取LimeLight检测结果
      * 2. 解析fiducial marker信息
@@ -860,7 +863,7 @@ public class MecanumWheel_new_Red_gamePad_1 extends LinearOpMode {
     /**
      * 位姿估计和炮台位置设置线程
      * 结合位姿估计和PID控制实现炮台自动瞄准
-     *
+     * <p>
      * 算法说明：
      * 1. 使用RoadRunner进行位姿估计
      * 2. 根据是否检测到目标切换PID参数
