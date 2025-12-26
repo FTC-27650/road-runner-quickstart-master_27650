@@ -4,11 +4,11 @@ package org.firstinspires.ftc.teamcode.FTC_27650_TeleOp_New;
  * FTC炮台朝向目标点控制类（适配新角度定义：x右0°，y正90°，x左±180°）
  * 适配麦克纳轮底盘，车辆朝向角度由场地实际坐标计算得出
  */
-public class TurretTargetingRed {
+public class TurretTargetingBlue {
     // ************************* 常量定义 *************************
     // 目标点A的坐标 (x: -150cm, y: -141cm)，单位与车辆坐标一致
     private static final double TARGET_X = -150.0;
-    private static final double TARGET_Y =  141.0;
+    private static final double TARGET_Y = -141.0;
     // 炮台旋转限位：左-60°，右60°（机械最大角度，相对于车体）
     private static final double TURRET_MAX_LEFT = -55.0;
     private static final double TURRET_MAX_RIGHT = 55.0;
