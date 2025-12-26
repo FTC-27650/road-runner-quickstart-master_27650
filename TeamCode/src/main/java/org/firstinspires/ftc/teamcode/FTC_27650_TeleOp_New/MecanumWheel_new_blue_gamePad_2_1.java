@@ -64,6 +64,8 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
     double rotate_kp = 0.00035, rotate_ki = 0.000001, rotate_kd = 0.000001, kf = 0;
     double kv = 0.001, ki_max = 10000, kvTime = 300;
     volatile double strikerServoUpPosition = 0.39;//0.37
+    volatile double strikerServoDownPosition = 0.54;//0.525
+
     volatile double strikerServoPosition = strikerServoDownPosition;
     volatile double angleServoPosition = 0; //初始化位置
     double angleServoSpeed = 0.02;
@@ -72,7 +74,6 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
     volatile double distanceFront = 0, distanceLeft = 0, distanceRight = 0;
     public static volatile double flyWheelTargetVelocity = 0;
     /// /舵机相关变量////
-    volatile double strikerServoDownPosition = 0.54;//0.525
     public volatile static double xiMotorMinPower = 0;//0.35;
     volatile double TurretCurrentPosition = 0;//炮台位置 left:6350
     /// 旋吸
