@@ -115,10 +115,8 @@ public class MecanumWheel_new_Red_gamePad_1_clearupdate extends LinearOpMode {
     volatile double carHeading = 0; // 车辆IMU实时角度
     volatile double turretTargetAngle = 0; // 炮台目标角度
     double turretKp = 0, turretKi = 0, turretKd = 0, turretKiMax = 0, turretMinErrorSetZero = 0;
-    double TURRET_KP_NOT_SEE = 0.02, TURRET_KI_NOT_SEE = 0.025, TURRET_KD_NOT_SEE = 0.00005,
-            TURRET_KI_MAX_NOT_SEE = 20, TURRET_MIN_ERROR_SET_ZERO_NOT_SEE = 3;
-    double TURRET_KP_SEE = 0.003, TURRET_KI_SEE = 0.003, TURRET_KD_SEE = 0.00005,
-            TURRET_KI_MAX_SEE = 20, TURRET_MIN_ERROR_SET_ZERO_SEE = 3;
+    double TURRET_KP_NOT_SEE = 0.02, TURRET_KI_NOT_SEE = 0.025, TURRET_KD_NOT_SEE = 0.00005, TURRET_KI_MAX_NOT_SEE = 20, TURRET_MIN_ERROR_SET_ZERO_NOT_SEE = 3;
+    double TURRET_KP_SEE = 0.003, TURRET_KI_SEE = 0.003, TURRET_KD_SEE = 0.00005, TURRET_KI_MAX_SEE = 20, TURRET_MIN_ERROR_SET_ZERO_SEE = 3;
     volatile double turretPower = 0;
 
     // 初始位姿
@@ -356,17 +354,12 @@ public class MecanumWheel_new_Red_gamePad_1_clearupdate extends LinearOpMode {
         }
 
         // 左方颜色传感器检测
-        if (hsvValuesLeft[2] <= 0.01 && hsvValuesLeft[0] <= 130
-                && (hsvValuesLeft[1] == 1 || hsvValuesLeft[1] == 0)) {
+        if (hsvValuesLeft[2] <= 0.01 && hsvValuesLeft[0] <= 130 && (hsvValuesLeft[1] == 1 || hsvValuesLeft[1] == 0)) {
             colorLeft = "无";
         } else {
-            if ((GREEN_HUE_MIN <= hsvValuesLeft[0] && hsvValuesLeft[0] <= GREEN_HUE_MAX)
-                    && (0.15 < hsvValuesLeft[1] && hsvValuesLeft[1] < 0.95)
-                    && hsvValuesLeft[1] > 0.01 && distanceLeft <= 2.5) {
+            if ((GREEN_HUE_MIN <= hsvValuesLeft[0] && hsvValuesLeft[0] <= GREEN_HUE_MAX) && (0.15 < hsvValuesLeft[1] && hsvValuesLeft[1] < 0.95) && hsvValuesLeft[1] > 0.01 && distanceLeft <= 2.5) {
                 colorLeft = "green";
-            } else if ((PURPLE_HUE_MIN <= hsvValuesLeft[0] && hsvValuesLeft[0] <= PURPLE_HUE_MAX)
-                    && (0.15 < hsvValuesLeft[1] && hsvValuesLeft[1] < 0.95)
-                    && hsvValuesLeft[1] > 0.01 && distanceLeft <= 2.5) {
+            } else if ((PURPLE_HUE_MIN <= hsvValuesLeft[0] && hsvValuesLeft[0] <= PURPLE_HUE_MAX) && (0.15 < hsvValuesLeft[1] && hsvValuesLeft[1] < 0.95) && hsvValuesLeft[1] > 0.01 && distanceLeft <= 2.5) {
                 colorLeft = "purple";
             } else {
                 colorLeft = "有";
@@ -374,17 +367,12 @@ public class MecanumWheel_new_Red_gamePad_1_clearupdate extends LinearOpMode {
         }
 
         // 右方颜色传感器检测
-        if (hsvValuesRight[2] <= 0.01 && hsvValuesRight[0] <= 130
-                && (hsvValuesRight[1] == 1 || hsvValuesRight[1] == 0)) {
+        if (hsvValuesRight[2] <= 0.01 && hsvValuesRight[0] <= 130 && (hsvValuesRight[1] == 1 || hsvValuesRight[1] == 0)) {
             colorRight = "无";
         } else {
-            if ((GREEN_HUE_MIN <= hsvValuesRight[0] && hsvValuesRight[0] <= GREEN_HUE_MAX)
-                    && (0.15 < hsvValuesRight[1] && hsvValuesRight[1] < 0.95)
-                    && hsvValuesRight[1] > 0.01 && distanceRight <= 2.5) {
+            if ((GREEN_HUE_MIN <= hsvValuesRight[0] && hsvValuesRight[0] <= GREEN_HUE_MAX) && (0.15 < hsvValuesRight[1] && hsvValuesRight[1] < 0.95) && hsvValuesRight[1] > 0.01 && distanceRight <= 2.5) {
                 colorRight = "green";
-            } else if ((PURPLE_HUE_MIN <= hsvValuesRight[0] && hsvValuesRight[0] <= PURPLE_HUE_MAX)
-                    && (0.15 < hsvValuesRight[1] && hsvValuesRight[1] < 0.95)
-                    && hsvValuesRight[1] > 0.01 && distanceRight <= 2.5) {
+            } else if ((PURPLE_HUE_MIN <= hsvValuesRight[0] && hsvValuesRight[0] <= PURPLE_HUE_MAX) && (0.15 < hsvValuesRight[1] && hsvValuesRight[1] < 0.95) && hsvValuesRight[1] > 0.01 && distanceRight <= 2.5) {
                 colorRight = "purple";
             } else {
                 colorRight = "有";
@@ -684,8 +672,7 @@ public class MecanumWheel_new_Red_gamePad_1_clearupdate extends LinearOpMode {
                     integral = Math.max(-FLYWHEEL_MAX_INTEGRAL, Math.min(integral, FLYWHEEL_MAX_INTEGRAL));
                     derivative = (error - previousError) / dt;
 
-                    flywheelVelocity = error * FLYWHEEL_KP + integral * FLYWHEEL_KI + derivative * FLYWHEEL_KD
-                            + FLYWHEEL_TARGET_VELOCITY * FLYWHEEL_KF;
+                    flywheelVelocity = error * FLYWHEEL_KP + integral * FLYWHEEL_KI + derivative * FLYWHEEL_KD + FLYWHEEL_TARGET_VELOCITY * FLYWHEEL_KF;
 
                     robot.flyWheelLeft.setVelocity(flywheelVelocity + (-gamepad2.right_stick_y * flywheelMaxVelocity));
                     robot.flyWheelRight.setVelocity(flywheelVelocity + (-gamepad2.right_stick_y * flywheelMaxVelocity));

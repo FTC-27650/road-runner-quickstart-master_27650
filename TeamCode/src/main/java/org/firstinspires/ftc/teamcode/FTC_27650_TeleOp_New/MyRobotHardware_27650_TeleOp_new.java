@@ -46,35 +46,36 @@ public class MyRobotHardware_27650_TeleOp_new {
     public VoltageSensor batterySensor;
 
     private LinearOpMode myOpMode = null;
+
     public MyRobotHardware_27650_TeleOp_new(LinearOpMode opmode) {
-       myOpMode = opmode;
+        myOpMode = opmode;
     }
 
-    public void init(){
+    public void init() {
         //端口配置
-        fl = myOpMode.hardwareMap.get(DcMotorEx.class,"fl");//c0
-        fr = myOpMode.hardwareMap.get(DcMotorEx.class,"fr");//c1
-        br = myOpMode.hardwareMap.get(DcMotorEx.class,"br");//c2
-        bl = myOpMode.hardwareMap.get(DcMotorEx.class,"bl");//c3
+        fl = myOpMode.hardwareMap.get(DcMotorEx.class, "fl");//c0
+        fr = myOpMode.hardwareMap.get(DcMotorEx.class, "fr");//c1
+        br = myOpMode.hardwareMap.get(DcMotorEx.class, "br");//c2
+        bl = myOpMode.hardwareMap.get(DcMotorEx.class, "bl");//c3
 
-        flyWheelLeft = myOpMode.hardwareMap.get(DcMotorEx.class,"fwl");//e0
-        flyWheelRight = myOpMode.hardwareMap.get(DcMotorEx.class,"fwr");//e1
+        flyWheelLeft = myOpMode.hardwareMap.get(DcMotorEx.class, "fwl");//e0
+        flyWheelRight = myOpMode.hardwareMap.get(DcMotorEx.class, "fwr");//e1
 
-        xiMotor = myOpMode.hardwareMap.get(DcMotorEx.class,"xm");//e2
+        xiMotor = myOpMode.hardwareMap.get(DcMotorEx.class, "xm");//e2
 
-        rotateMotor = myOpMode.hardwareMap.get(DcMotorEx.class,"rm");//e3 弹舱
+        rotateMotor = myOpMode.hardwareMap.get(DcMotorEx.class, "rm");//e3 弹舱
         indexPin = myOpMode.hardwareMap.get(DigitalChannel.class, "ip");//ed2
 
-        strikerServo = myOpMode.hardwareMap.get(Servo.class,"ss");      //servo hub 0  扳机
-        angleServo = myOpMode.hardwareMap.get(Servo.class,"as");        //servo hub 1
-        leftTurretServo = myOpMode.hardwareMap.get(Servo.class,"lrs");  //servo hub 2
-        rightTurretServo = myOpMode.hardwareMap.get(Servo.class,"rrs"); //servo hub 3
+        strikerServo = myOpMode.hardwareMap.get(Servo.class, "ss");      //servo hub 0  扳机
+        angleServo = myOpMode.hardwareMap.get(Servo.class, "as");        //servo hub 1
+        leftTurretServo = myOpMode.hardwareMap.get(Servo.class, "lrs");  //servo hub 2
+        rightTurretServo = myOpMode.hardwareMap.get(Servo.class, "rrs"); //servo hub 3
 
         colorSensorFront = myOpMode.hardwareMap.get(NormalizedColorSensor.class, "csf");//c I2C 1
         colorSensorLeft = myOpMode.hardwareMap.get(NormalizedColorSensor.class, "csl");//c I2C  2
         colorSensorRight = myOpMode.hardwareMap.get(NormalizedColorSensor.class, "csr");//c I2C 3
 
-        magnetic_in = myOpMode.hardwareMap.get(TouchSensor.class,"mi");//cd6
+        magnetic_in = myOpMode.hardwareMap.get(TouchSensor.class, "mi");//cd6
 
         ledPin = myOpMode.hardwareMap.get(DigitalChannel.class, "lp");//cd2
         ledPin.setMode(DigitalChannel.Mode.OUTPUT);
@@ -114,7 +115,7 @@ public class MyRobotHardware_27650_TeleOp_new {
         //((SwitchableLight)colorSensorFront).enableLight(true);
 
         RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;
-        RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.UP;
+        RevHubOrientationOnRobot.UsbFacingDirection usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.UP;
 
         RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
 
@@ -129,7 +130,8 @@ public class MyRobotHardware_27650_TeleOp_new {
         xiMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         xiMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
     }
-    public void rotateMotorEncoderRest(){
+
+    public void rotateMotorEncoderRest() {
         // 2. 设置编码器模式
         rotateMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rotateMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);

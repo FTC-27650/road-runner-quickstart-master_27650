@@ -8,7 +8,7 @@ public class TurretTargetingRed {
     // ************************* 常量定义 *************************
     // 目标点A的坐标 (x: -150cm, y: -141cm)，单位与车辆坐标一致
     private static final double TARGET_X = -150.0;
-    private static final double TARGET_Y =  141.0;
+    private static final double TARGET_Y = 141.0;
     // 炮台旋转限位：左-60°，右60°（机械最大角度，相对于车体）
     private static final double TURRET_MAX_LEFT = -55.0;
     private static final double TURRET_MAX_RIGHT = 55.0;
@@ -19,8 +19,10 @@ public class TurretTargetingRed {
     private double carHeading = 0.0; // 车辆朝向角度（新规则：x右0°，y正90°，范围[-180, 180]）
 
     // ************************* 核心计算方法：获取炮台需旋转的角度 *************************
+
     /**
      * 计算炮台相对于车体的旋转角度（已做归一化和限位处理）
+     *
      * @return 炮台目标角度（度）：负=左转，正=右转
      */
     public double getTurretTargetAngle() {
@@ -57,8 +59,10 @@ public class TurretTargetingRed {
     }
 
     // ************************* 数据更新方法（需对接实际定位） *************************
+
     /**
      * 更新车辆实时坐标（从里程计/视觉定位（如AprilTag）获取后调用）
+     *
      * @param x 车辆当前x坐标
      * @param y 车辆当前y坐标
      */
@@ -69,6 +73,7 @@ public class TurretTargetingRed {
 
     /**
      * 更新车辆朝向角度（由场地实际坐标计算得出，需符合新角度规则）
+     *
      * @param heading 车辆朝向角度（x右0°，y正90°，范围[-180, 180]）
      */
     public void updateCarHeading(double heading) {
