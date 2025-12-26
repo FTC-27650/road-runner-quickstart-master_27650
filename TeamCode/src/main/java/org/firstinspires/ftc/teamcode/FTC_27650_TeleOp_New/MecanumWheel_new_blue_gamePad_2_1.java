@@ -91,18 +91,16 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
     volatile int a = 1, b = 1, c = 0, g = 1, p = 1;
     volatile double pose2dXCM = 0, pose2dYCM = 0;
     volatile double distanc_car_to_red = 0;
+    /// limeLight反馈
+    volatile double xDegrees = 0, yDegrees = 0, distance = 0;
     /// 车辆相对于场地实时位置
     volatile double pose2dX = 0, pose2dY = 0;
     volatile int id = 0;
-    /// limeLight反馈
-    volatile double xDegrees = 0, yDegrees = 0, distance = 0;
     volatile double TurretTargetAngle = 0;//炮台目标角度
     public static volatile double TurretTargetAngle_yuan = 5;//-3.5 往右为负，往左为正
     public static volatile double TurretTargetAngle_jin_1 = 2;//-3    往右为负，往左为正
     public static volatile double TurretTargetAngle_jin_2 = 0;//-3    往右为负，往左为正
     public static volatile double TurretTargetAngle_jin_3 = 0;//-3    往右为负，往左为正
-    /// /炮台
-    volatile double CarHeading = 0;//车辆imu实时角度
     /// 炮台pid参数
     double TurretKpNotSee = 0.02, TurretKiNotSee = 0.025, TurretKdNotSee = 0.00005, TurretkiMaxNotSee = 200, TurrentMinErrorSetZeroNotSee = 3;
     /// <= 120cm
@@ -111,6 +109,8 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
     double TurretKpSeeJin_2 = 0.003, TurretKiSeeJin_2 = 0.003, TurretKdSeeJin_2 = 0.000055, TurretkiMaxSeeJin_2 = 200, TurretKVSeeJin_2 = 0.0002, TurrentMinErrorSetZeroSeeJin_2 = 4.5;
     ///  160cm------220cm
     double TurretKpSeeJin_3 = 0.003, TurretKiSeeJin_3 = 0.003, TurretKdSeeJin_3 = 0.00005, TurretkiMaxSeeJin_3 = 200, TurretKVSeeJin_3 = 0.0005, TurrentMinErrorSetZeroSeeJin_3 = 4;
+    /// /炮台
+    volatile double CarHeading = 0;//车辆imu实时角度
 
     public static double TurretMinPower = 0, TurretTime = 100;
     volatile double TurretPower = 0;
@@ -349,6 +349,189 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
         robot.xiMotor.setPower(xiMotorPower);
     }
 
+    public class MecanumThread extends Thread {
+        public void run() {
+            while (opModeIsActive()) {
+                Mecanum();
+            }
+        }
+    }
+
+    public class otherThread extends Thread {
+        public void run() {
+            try {
+                while (opModeIsActive()) {
+                    colorSensor();
+                    if (b == 2 && (double) rotateMotorTargetPosition % step == 0 && Math.abs(rotateMotorCurrentPosition - rotateMotorNewTargetPosition) <= 150) {//
+                        if (colorFront.equals("有") && c <= 3) {
+                            c += 1;
+                            if (c >= 3) {
+                                c = 3;
+                                b = 1;
+                            }
+                            rotateMotorTargetPosition += step;//(288/3);
+                            rotateMotorNewTargetPosition = rotateMotorTargetPosition;
+                        }
+                    } else if (g == 2 && Math.abs(rotateMotorCurrentPosition - rotateMotorNewTargetPosition) <= 150) {
+                        if (colorLeft.equals("green") || colorRight.equals("green")) {
+                            g = 1;
+                        } else {
+                            rotateMotorTargetPosition += step;//(288/3);
+                            rotateMotorNewTargetPosition = rotateMotorTargetPosition;
+                        }
+                    } else if (p == 2 && Math.abs(rotateMotorCurrentPosition - rotateMotorNewTargetPosition) <= 150) {
+                        if (colorLeft.equals("purple") || colorRight.equals("purple")) {
+                            p = 1;
+                        } else {
+                            rotateMotorTargetPosition += step;//(288/3);
+                            rotateMotorNewTargetPosition = rotateMotorTargetPosition;
+                        }
+                    }
+                    servoControl();
+                    xiMotor();
+                    show();
+                    sleep(10);
+                }
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    /// 彩灯程序发送单个精确宽度的脉冲
+    private void sendShortPulse(int widthMs) {
+        robot.ledPin.setState(false);
+        sleep(widthMs);
+        robot.ledPin.setState(true);
+    }
+
+    public class ledControlThread extends Thread {
+        public void run() {
+            try {
+                while (opModeIsActive()) {
+                    if ((colorLeft.equals("green") || colorRight.equals("green")) && ledColor) {
+                        sendShortPulse(60); // 45ms中脉冲 = 绿
+                        lastPressTime = System.currentTimeMillis();
+                    } else if ((colorLeft.equals("purple") || colorRight.equals("purple")) && ledColor) {
+                        sendShortPulse(40); // 20ms短脉冲 = 红
+                        lastPressTime = System.currentTimeMillis();
+                    } else if (c == 3) {
+                        sendShortPulse(20); // 70ms长脉冲 = 白
+                        lastPressTime = System.currentTimeMillis();
+                    } else {
+                        sendShortPulse(80); // 120ms超长脉冲 = 关
+                        lastPressTime = System.currentTimeMillis();
+                    }
+                }
+                // 程序结束发送关灯脉冲
+                sendShortPulse(120);
+                robot.ledPin.setState(true);
+                sleep(10);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    /*弹舱绝对值位置获取
+    public void rotateAbsolutePosition(){
+        // 3. 读取数据
+        int rawCount = robot.rotateMotor.getCurrentPosition();
+        boolean indexState = robot.indexPin.getState(); // true=高电平, false=低电平
+
+        // 4. 索引下降沿触发归零（假设索引低电平有效）
+        if (!indexState && lastIndexState) {
+            zeroOffset = -rawCount;  // 计算偏移量
+        }
+        lastIndexState = indexState;
+
+        // 5. 计算绝对角度（0-360度）
+        absPos = rawCount + zeroOffset;
+        angleDeg = (absPos % COUNTS_PER_REV) * 360.0 / COUNTS_PER_REV;
+        if (angleDeg < 0) angleDeg += 360;
+    }
+     */
+    //飞轮线程 gamepad2.right_stick_y 控制飞轮
+    public class setFlyWheelPowerThread extends Thread {
+        public void run() {
+            try {
+                // 基础功率（前馈部分，根据目标速度需求设置）
+                double basePower = 0.6;  // 基础功率（前馈）
+                double adjustPower = 0;  // 反馈调节量
+
+                // 轻量化PID参数（仅用于修正补偿小波动）
+                final double kp = flyWheel_kp;//0.0001;   // 比例系数（比纯反馈时小）
+                final double ki = flyWheel_ki;//0.000005; // 积分系数（弱化积分，避免超调）
+                final double kd = flyWheel_kd;//0.00002;  // 微分系数（抑制突变）
+                final double maxAdjust = 0.15; // 限制调节幅度
+
+                ElapsedTime loopTimer = new ElapsedTime();
+                final double loopPeriod = 0.01;
+
+                while (opModeIsActive()) {
+                    double dt = loopTimer.seconds();
+                    loopTimer.reset();
+
+                    //1. 确定目标速度（用于前馈基准）
+                    if (stop_turret_angleServo_flySpeed) {
+                        if (distance <= 160) {
+                            flyWheelTargetVelocity = Math.max(1300, 2.35 * distance + 1100);
+                        } else if (160 < distance && distance <= 185) {
+                            flyWheelTargetVelocity = Math.max(1300, 2.35 * distance + 1150);
+                        } else if (185 < distance && distance <= 200) {
+                            flyWheelTargetVelocity = Math.max(1300, 2.35 * distance + 1200);
+                        } else if (200 < distance && distance <= 230) {
+                            flyWheelTargetVelocity = Math.max(1300, 2.35 * distance + 1250);
+                        } else {
+                            flyWheelTargetVelocity = 1850;
+                        }
+                    } else {
+                        flyWheelTargetVelocity = 0;
+                    }
+
+                    // 2. 前馈功率：根据目标速度设置基础功率（线性映射）
+                    // 假设最大速度2500对应功率1.0，计算目标速度对应的基础功率
+                    basePower = Math.max(0, flyWheelTargetVelocity / 2500.0);
+
+                    // 3. 反馈调节：修正实际速度与目标的偏差
+                    double currentVelocity = robot.flyWheelLeft.getVelocity();
+                    double error = flyWheelTargetVelocity - currentVelocity;
+
+                    // 积分项（限制范围，避免饱和）
+                    double integral = 0;
+                    integral += error * dt;
+                    integral = Math.max(-0.3, Math.min(integral, 0.3));
+
+                    // 微分项
+                    double lastError = 0;
+                    double derivative = (error - lastError) / dt;
+                    lastError = error;
+
+                    // 计算反馈调节量
+                    adjustPower = kp * error + ki * integral + kd * derivative;
+                    adjustPower = Math.max(-maxAdjust, Math.min(adjustPower, maxAdjust));
+
+                    // 4. 最终功率 = 前馈 + 反馈 + 手柄微调
+                    double finalPower = basePower + adjustPower;
+                    finalPower += -gamepad2.right_stick_y * 0.15; // 手柄微调幅度减小
+                    finalPower = Math.max(0, Math.min(finalPower, 1.0));
+
+                    // 5. 应用功率
+                    robot.flyWheelLeft.setPower(finalPower);
+                    robot.flyWheelRight.setPower(finalPower);
+
+                    sleep((long) (loopPeriod * 1000));
+                }
+
+                // 停止时关闭功率
+                robot.flyWheelLeft.setPower(0);
+                robot.flyWheelRight.setPower(0);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
     // 按键控制线程
     public void buttonControlRotateMotor() {
         final int downTime = strikeDownTime;
@@ -492,237 +675,6 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
         }
     }
 
-    public void ziDongShe() {
-        if (a == 1) {
-            rotateMotorTargetPosition += (step - errorPosition);//(288/3);
-            sleep(200);
-            for (int i = 1; i <= 3; i++) {
-                strikerServoPosition = strikerServoUpPosition;  //一键抬升
-                robot.strikerServo.setPosition(strikerServoPosition);
-                sleep(strikeUpTime);
-                strikerServoPosition = strikerServoDownPosition;  //一键下降
-                robot.strikerServo.setPosition(strikerServoPosition);
-                sleep(strikeDownTime);
-                rotateMotorTargetPosition += step;//(288/3);
-                if (i == 1) {
-                    sleep(timeRotate1);
-                } else if (i == 2) {
-                    sleep(timeRotate2);
-                } else {
-                    sleep(timeRotate3);
-                }
-            }
-        }
-        if (a == 2) {
-            for (int i = 1; i <= 3; i++) {
-                strikerServoPosition = strikerServoUpPosition;  //一键抬升
-                robot.strikerServo.setPosition(strikerServoPosition);
-                sleep(strikeUpTime);
-                strikerServoPosition = strikerServoDownPosition;  //一键下降
-                robot.strikerServo.setPosition(strikerServoPosition);
-                sleep(strikeDownTime);
-                rotateMotorTargetPosition += step;//(288/3);
-                if (i == 1) {
-                    sleep(timeRotate1);
-                } else if (i == 2) {
-                    sleep(timeRotate2);
-                } else {
-                    sleep(timeRotate3);
-                }
-            }
-        }
-        rotateMotorTargetPosition += errorPosition;//(288/3);
-        a = 1;
-        b = 1;
-        g = 1;
-        p = 1;
-        c = 0;
-
-    }
-
-    /// 彩灯程序发送单个精确宽度的脉冲
-    private void sendShortPulse(int widthMs) {
-        robot.ledPin.setState(false);
-        sleep(widthMs);
-        robot.ledPin.setState(true);
-    }
-
-    public class MecanumThread extends Thread {
-        public void run() {
-            while (opModeIsActive()) {
-                Mecanum();
-            }
-        }
-    }
-
-    public class otherThread extends Thread {
-        public void run() {
-            try {
-                while (opModeIsActive()) {
-                    colorSensor();
-                    if (b == 2 && (double) rotateMotorTargetPosition % step == 0 && Math.abs(rotateMotorCurrentPosition - rotateMotorNewTargetPosition) <= 150) {//
-                        if (colorFront.equals("有") && c <= 3) {
-                            c += 1;
-                            if (c >= 3) {
-                                c = 3;
-                                b = 1;
-                            }
-                            rotateMotorTargetPosition += step;//(288/3);
-                            rotateMotorNewTargetPosition = rotateMotorTargetPosition;
-                        }
-                    } else if (g == 2 && Math.abs(rotateMotorCurrentPosition - rotateMotorNewTargetPosition) <= 150) {
-                        if (colorLeft.equals("green") || colorRight.equals("green")) {
-                            g = 1;
-                        } else {
-                            rotateMotorTargetPosition += step;//(288/3);
-                            rotateMotorNewTargetPosition = rotateMotorTargetPosition;
-                        }
-                    } else if (p == 2 && Math.abs(rotateMotorCurrentPosition - rotateMotorNewTargetPosition) <= 150) {
-                        if (colorLeft.equals("purple") || colorRight.equals("purple")) {
-                            p = 1;
-                        } else {
-                            rotateMotorTargetPosition += step;//(288/3);
-                            rotateMotorNewTargetPosition = rotateMotorTargetPosition;
-                        }
-                    }
-                    servoControl();
-                    xiMotor();
-                    show();
-                    sleep(10);
-                }
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    public class ledControlThread extends Thread {
-        public void run() {
-            try {
-                while (opModeIsActive()) {
-                    if ((colorLeft.equals("green") || colorRight.equals("green")) && ledColor) {
-                        sendShortPulse(60); // 45ms中脉冲 = 绿
-                        lastPressTime = System.currentTimeMillis();
-                    } else if ((colorLeft.equals("purple") || colorRight.equals("purple")) && ledColor) {
-                        sendShortPulse(40); // 20ms短脉冲 = 红
-                        lastPressTime = System.currentTimeMillis();
-                    } else if (c == 3) {
-                        sendShortPulse(20); // 70ms长脉冲 = 白
-                        lastPressTime = System.currentTimeMillis();
-                    } else {
-                        sendShortPulse(80); // 120ms超长脉冲 = 关
-                        lastPressTime = System.currentTimeMillis();
-                    }
-                }
-                // 程序结束发送关灯脉冲
-                sendShortPulse(120);
-                robot.ledPin.setState(true);
-                sleep(10);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    /*弹舱绝对值位置获取
-    public void rotateAbsolutePosition(){
-        // 3. 读取数据
-        int rawCount = robot.rotateMotor.getCurrentPosition();
-        boolean indexState = robot.indexPin.getState(); // true=高电平, false=低电平
-
-        // 4. 索引下降沿触发归零（假设索引低电平有效）
-        if (!indexState && lastIndexState) {
-            zeroOffset = -rawCount;  // 计算偏移量
-        }
-        lastIndexState = indexState;
-
-        // 5. 计算绝对角度（0-360度）
-        absPos = rawCount + zeroOffset;
-        angleDeg = (absPos % COUNTS_PER_REV) * 360.0 / COUNTS_PER_REV;
-        if (angleDeg < 0) angleDeg += 360;
-    }
-     */
-    //飞轮线程 gamepad2.right_stick_y 控制飞轮
-    public class setFlyWheelPowerThread extends Thread {
-        public void run() {
-            try {
-                // 基础功率（前馈部分，根据目标速度需求设置）
-                double basePower = 0.6;  // 基础功率（前馈）
-                double adjustPower = 0;  // 反馈调节量
-
-                // 轻量化PID参数（仅用于修正补偿小波动）
-                final double kp = flyWheel_kp;//0.0001;   // 比例系数（比纯反馈时小）
-                final double ki = flyWheel_ki;//0.000005; // 积分系数（弱化积分，避免超调）
-                final double kd = flyWheel_kd;//0.00002;  // 微分系数（抑制突变）
-                final double maxAdjust = 0.15; // 限制调节幅度
-
-                ElapsedTime loopTimer = new ElapsedTime();
-                final double loopPeriod = 0.01;
-
-                while (opModeIsActive()) {
-                    double dt = loopTimer.seconds();
-                    loopTimer.reset();
-
-                    //1. 确定目标速度（用于前馈基准）
-                    if (stop_turret_angleServo_flySpeed) {
-                        if (distance <= 160) {
-                            flyWheelTargetVelocity = Math.max(1300, 2.35 * distance + 1100);
-                        } else if (160 < distance && distance <= 185) {
-                            flyWheelTargetVelocity = Math.max(1300, 2.35 * distance + 1150);
-                        } else if (185 < distance && distance <= 200) {
-                            flyWheelTargetVelocity = Math.max(1300, 2.35 * distance + 1200);
-                        } else if (200 < distance && distance <= 230) {
-                            flyWheelTargetVelocity = Math.max(1300, 2.35 * distance + 1250);
-                        } else {
-                            flyWheelTargetVelocity = 1850;
-                        }
-                    } else {
-                        flyWheelTargetVelocity = 0;
-                    }
-
-                    // 2. 前馈功率：根据目标速度设置基础功率（线性映射）
-                    // 假设最大速度2500对应功率1.0，计算目标速度对应的基础功率
-                    basePower = Math.max(0, flyWheelTargetVelocity / 2500.0);
-
-                    // 3. 反馈调节：修正实际速度与目标的偏差
-                    double currentVelocity = robot.flyWheelLeft.getVelocity();
-                    double error = flyWheelTargetVelocity - currentVelocity;
-
-                    // 积分项（限制范围，避免饱和）
-                    double integral = 0;
-                    integral += error * dt;
-                    integral = Math.max(-0.3, Math.min(integral, 0.3));
-
-                    // 微分项
-                    double lastError = 0;
-                    double derivative = (error - lastError) / dt;
-                    lastError = error;
-
-                    // 计算反馈调节量
-                    adjustPower = kp * error + ki * integral + kd * derivative;
-                    adjustPower = Math.max(-maxAdjust, Math.min(adjustPower, maxAdjust));
-
-                    // 4. 最终功率 = 前馈 + 反馈 + 手柄微调
-                    double finalPower = basePower + adjustPower;
-                    finalPower += -gamepad2.right_stick_y * 0.15; // 手柄微调幅度减小
-                    finalPower = Math.max(0, Math.min(finalPower, 1.0));
-
-                    // 5. 应用功率
-                    robot.flyWheelLeft.setPower(finalPower);
-                    robot.flyWheelRight.setPower(finalPower);
-
-                    sleep((long) (loopPeriod * 1000));
-                }
-
-                // 停止时关闭功率
-                robot.flyWheelLeft.setPower(0);
-                robot.flyWheelRight.setPower(0);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }
-    }
-
     public class setRotateMotorPositionThread extends Thread {
         public void run() {
             try {
@@ -779,6 +731,54 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
                 robot.rotateMotor.setPower(0);
             }
         }
+    }
+
+    public void ziDongShe() {
+        if (a == 1) {
+            rotateMotorTargetPosition += (step - errorPosition);//(288/3);
+            sleep(200);
+            for (int i = 1; i <= 3; i++) {
+                strikerServoPosition = strikerServoUpPosition;  //一键抬升
+                robot.strikerServo.setPosition(strikerServoPosition);
+                sleep(strikeUpTime);
+                strikerServoPosition = strikerServoDownPosition;  //一键下降
+                robot.strikerServo.setPosition(strikerServoPosition);
+                sleep(strikeDownTime);
+                rotateMotorTargetPosition += step;//(288/3);
+                if (i == 1) {
+                    sleep(timeRotate1);
+                } else if (i == 2) {
+                    sleep(timeRotate2);
+                } else {
+                    sleep(timeRotate3);
+                }
+            }
+        }
+        if (a == 2) {
+            for (int i = 1; i <= 3; i++) {
+                strikerServoPosition = strikerServoUpPosition;  //一键抬升
+                robot.strikerServo.setPosition(strikerServoPosition);
+                sleep(strikeUpTime);
+                strikerServoPosition = strikerServoDownPosition;  //一键下降
+                robot.strikerServo.setPosition(strikerServoPosition);
+                sleep(strikeDownTime);
+                rotateMotorTargetPosition += step;//(288/3);
+                if (i == 1) {
+                    sleep(timeRotate1);
+                } else if (i == 2) {
+                    sleep(timeRotate2);
+                } else {
+                    sleep(timeRotate3);
+                }
+            }
+        }
+        rotateMotorTargetPosition += errorPosition;//(288/3);
+        a = 1;
+        b = 1;
+        g = 1;
+        p = 1;
+        c = 0;
+
     }
 
     public class limeLightThread extends Thread {
