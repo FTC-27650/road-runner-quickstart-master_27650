@@ -33,15 +33,6 @@ public class MecanumWheel_blue extends LinearOpMode {
     public static double rotate_kd = 0.0000006;//0.001;
     public static double ki_max = 5000;
     public static double kf = 0;
-    public static double greenMin = 140, greenMax = 170;
-    public static double purpleMin = 215, purpleMax = 260;
-    public static double strikerServoDownPosition = 0.43;//角度舵机
-    public static double flyWheelMaxVelocity = 3500;
-    public static double xiMotorMinPower = 0;//0.35;
-    final float[] hsvValuesFront = new float[3]; // 1前面色调 2饱和度
-    final float[] hsvValuesLeft = new float[3]; // 1左边色调 2饱和度
-    final float[] hsvValuesRight = new float[3];// 1右边色调 2饱和度
-    private final ElapsedTime runtime = new ElapsedTime();
     int rotateMotorCurrentPosition = 0;
     int rotateMotorOldTargetPosition = 0;
     int rotateMotorTargetPosition = 0;
@@ -49,6 +40,12 @@ public class MecanumWheel_blue extends LinearOpMode {
     double rotateMotorMinPower = 0.1;
     double rotateMotorMaxPower = 0.8;
     int step = 2731; //96;
+
+    public static double greenMin = 140, greenMax = 170;
+    public static double purpleMin = 215, purpleMax = 260;
+    public static double strikerServoDownPosition = 0.43;//角度舵机
+    public static double flyWheelMaxVelocity = 3500;
+    public static double xiMotorMinPower = 0;//0.35;
     float gain = 3;//颜色传感器增益值，要>=1
     volatile String colorFront = "无";
     volatile String colorLeft = "无";
@@ -56,15 +53,21 @@ public class MecanumWheel_blue extends LinearOpMode {
     volatile double distanceFront = 0;
     volatile double distanceLeft = 0;
     volatile double distanceRight = 0;
+    final float[] hsvValuesFront = new float[3]; // 1前面色调 2饱和度
     MyRobotHardware_27650_TeleOp robot = new MyRobotHardware_27650_TeleOp(this);
     setRotateMotorPositionThread setRotateMotorPositionThread = new setRotateMotorPositionThread();
     camera cameraThread = new camera();
+    final float[] hsvValuesLeft = new float[3]; // 1左边色调 2饱和度
     double strikerServoUpPosition = 0.15;//角度舵机
     volatile double strikerServoPosition = strikerServoDownPosition;
     volatile double angleServoPosition = 0; //初始化位置
     double angleServoSpeed = 0.01;
+
     volatile double flyWheelTargetVelocity = 0;
     double xiMotorPower = 0;
+    final float[] hsvValuesRight = new float[3];// 1右边色调 2饱和度
+    private final ElapsedTime runtime = new ElapsedTime();
+
     volatile int a = 1;
     int b = 1;
     int c = 0;
@@ -74,7 +77,6 @@ public class MecanumWheel_blue extends LinearOpMode {
     volatile boolean camUsing = false;
     volatile double range = 0, angleZ = 0, angleY = 0;
     volatile int id = 0;
-
     @Override
     public void runOpMode() {
 
@@ -116,7 +118,6 @@ public class MecanumWheel_blue extends LinearOpMode {
             if (!camUsing) show();
         }
     }
-
     public void show() {
         telemetry.clear();
         telemetry.addData("imu", "%4.2f", robot.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
@@ -139,7 +140,6 @@ public class MecanumWheel_blue extends LinearOpMode {
         telemetry.addData("g, p", "%d, %d", g, p);
         telemetry.update();
     }
-
     public void Mecanum() {
         double y = -gamepad1.left_stick_y;
         double x = gamepad1.left_stick_x;
@@ -175,7 +175,6 @@ public class MecanumWheel_blue extends LinearOpMode {
         robot.br.setPower(brPower);
         robot.bl.setPower(blPower);
     }
-
     public void servoControl() {
         if (rotateMotorTargetPosition % step == 0) {
             strikerServoPosition = strikerServoDownPosition;  //一键下降
@@ -197,7 +196,6 @@ public class MecanumWheel_blue extends LinearOpMode {
         robot.strikerServo.setPosition(strikerServoPosition);
         robot.angleServo.setPosition(angleServoPosition);
     }
-
     public void colorSensor() {
         if (gamepad1.a) gain += 0.005F;
         else if (gamepad1.b && gain > 1) gain -= 0.005F;
@@ -270,7 +268,6 @@ public class MecanumWheel_blue extends LinearOpMode {
         }
 
     }
-
     //飞轮线程 gamepad2.right_stick_y 控制飞轮
     public void flyWheelControl() {
 
@@ -278,7 +275,6 @@ public class MecanumWheel_blue extends LinearOpMode {
         robot.flyWheelLeft.setVelocity(flyWheelVelocity);
         robot.flyWheelRight.setVelocity(flyWheelVelocity);
     }
-
     //gamepad2.left_stick_y 控制吸轮
     public void xiMotor() {
         int time1 = 0;
@@ -290,7 +286,6 @@ public class MecanumWheel_blue extends LinearOpMode {
         xiMotorPower = -gamepad2.left_stick_y + xiMotorMinPower;
         robot.xiMotor.setPower(xiMotorPower);
     }
-
     /*彩灯程序
     public void ledControl() {
         if (colorLeft.equals("green") || colorRight.equals("green")) {
@@ -408,7 +403,6 @@ public class MecanumWheel_blue extends LinearOpMode {
             }
         }
     }
-
     public class setRotateMotorPositionThread extends Thread {
         public void run() {
             try {
@@ -510,14 +504,12 @@ public class MecanumWheel_blue extends LinearOpMode {
             }
         }
     }
-
     //相机线程
     public class camera extends Thread {
         public static final boolean USE_WEBCAM = true;
         public AprilTagProcessor aprilTag;
         public VisionPortal visionPortal;
         public boolean streamingStopped = true;
-
         public void run() {
             initAprilTag();
             // 不在子线程调用 waitForStart()，避免与主线程冲突
@@ -590,7 +582,6 @@ public class MecanumWheel_blue extends LinearOpMode {
                 throw new RuntimeException(e);
             }
         }
-
         public void initAprilTag() {
 
             // 创建 AprilTag 处理器实例。
@@ -665,7 +656,6 @@ public class MecanumWheel_blue extends LinearOpMode {
 
 
         }
-
         public void telemetryAprilTag() {
             // 获取当前检测列表并显示数量。
             List<AprilTagDetection> currentDetections = aprilTag.getDetections();

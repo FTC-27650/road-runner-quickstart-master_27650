@@ -10,10 +10,12 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 @TeleOp(name = "精简编码器读取")
 @Disabled
 public class AbsoluteEncoderReader extends LinearOpMode {
-    // 关键参数：根据编码器规格修改
-    private static final int COUNTS_PER_REV = 8192; // 本例以8192计数/圈为例，如果是2048请修改
     private DcMotorEx encoderMotor;  // 接A/B相
     private DigitalChannel indexPin; // 接I相
+
+    // 关键参数：根据编码器规格修改
+    private static final int COUNTS_PER_REV = 8192; // 本例以8192计数/圈为例，如果是2048请修改
+
     private int zeroOffset = 0; // 归零偏移量
     private boolean lastIndexState = false; // 上次索引状态
 

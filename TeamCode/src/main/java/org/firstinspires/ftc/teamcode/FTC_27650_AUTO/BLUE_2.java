@@ -11,6 +11,7 @@ import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.TranslationalVelConstraint;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
@@ -28,7 +29,7 @@ import java.util.List;
 
 @Autonomous(name = "blue_2")
 @Config
-
+@Disabled
 public class BLUE_2 extends LinearOpMode {
     public static double greenMin = 140, greenMax = 170;
     MyRobotHardware_27650_Auto robot = new MyRobotHardware_27650_Auto(this);

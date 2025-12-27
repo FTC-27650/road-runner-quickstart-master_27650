@@ -1,18 +1,20 @@
 package org.firstinspires.ftc.teamcode.ftc_test;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp(name = "舵机测试")
 @Config
-//@Disabled
+@Disabled
 public class servoTest extends LinearOpMode {
 
-    public static double s0Speed = 0.0001;
     Servo s0 = null;
     double s0Position = 0.5;
+    public static double s0Speed = 0.0001;
+
     Servo s1 = null;
     double s1Position = 0.5;
     double s1Speed = 0.0001;
