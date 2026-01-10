@@ -42,10 +42,10 @@ public class MyRobotHardware_27650_AUTO_new {
     //RevBlinkinLedDriver blinkinLedDriver;
 
     public Limelight3A limelight;
-    public VoltageSensor batterySensor;
     IMU imu;
-    private LinearOpMode myOpMode = null;
+    public VoltageSensor batterySensor;
 
+    private LinearOpMode myOpMode = null;
     public MyRobotHardware_27650_AUTO_new(LinearOpMode opmode) {
         myOpMode = opmode;
     }

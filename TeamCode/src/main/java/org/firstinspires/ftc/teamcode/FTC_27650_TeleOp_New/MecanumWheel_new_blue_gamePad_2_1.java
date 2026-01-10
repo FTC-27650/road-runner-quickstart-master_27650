@@ -26,26 +26,6 @@ import java.util.List;
 //@Disabled
 public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
 
-    /// 飞轮
-    public static double flyWheel_kp = 0.0001, flyWheel_ki = 0.000005, flyWheel_kd = 0.00002;
-    public static double flyWheel_max = 600, flyWheel_kf = 1, flyWheel_kv = 0;
-    public static volatile double flyWheelTargetVelocity = 0;
-    public volatile static double xiMotorMinPower = 0;//0.35;
-    /// 自动射时间参数
-    public static int colorDelayTime = 200;
-    public static int timeRotate1 = 350;
-    public static int timeRotate2 = 350;
-    public static int timeRotate3 = 350;
-    public static int strikeUpTime = 300;
-    public static int strikeDownTime = 300;
-    public static volatile double TurretTargetAngle_yuan = 3;//-3.5 往右为负，往左为正
-    public static volatile double TurretTargetAngle_jin_1 = -5;//-3    往右为负，往左为正
-    public static volatile double TurretTargetAngle_jin_2 = -4;//-3    往右为负，往左为正
-    public static volatile double TurretTargetAngle_jin_3 = -3;//-3    往右为负，往左为正
-    ///  >=220cm
-    public static double TurretKpSeeYuan = 0.003, TurretKiSeeYuan = 0.003, TurretKdSeeYuan = 0.00005,
-            TurretkiMaxSeeYuan = 20, TurretKVSeeYuan = 0.0000, TurrentMinErrorSetZeroSeeYuan = 2.5;
-    public static double TurretMinPower = 0, TurretTime = 100;
     private final ElapsedTime runtime = new ElapsedTime();
     MecanumThread MecanumThread = new MecanumThread();
     otherThread otherThread = new otherThread();
@@ -57,6 +37,7 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
     // 初始化炮台朝向控制类
     TurretTargetingBlue TurretTargeting = new TurretTargetingBlue();
     pose2d_setTurrentPosition_Thread pose2d_setTurrentPosition_Thread = new pose2d_setTurrentPosition_Thread();
+
     volatile boolean setRotateMotorPositionThread_using = true;
     /// 弹舱
     volatile int rotateMotorMaxErrorPosition = 0;//100;
@@ -79,31 +60,48 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
     volatile float gain = 3;//颜色传感器增益值，要>=1
     volatile String colorFront = "无", colorLeft = "无", colorRight = "无";
     volatile double distanceFront = 0, distanceLeft = 0, distanceRight = 0;
-    /// /舵机相关变量////
-    volatile double strikerServoDownPosition = 0.54;//0.525
+    /// 飞轮
+    public static double flyWheel_kp = 0.0001, flyWheel_ki = 0.000005, flyWheel_kd = 0.00002;
     volatile double strikerServoUpPosition = 0.39;//0.37
+    ////舵机相关变量////
+    volatile double strikerServoDownPosition = 0.54;//0.525
     volatile double strikerServoPosition = strikerServoDownPosition;
     volatile double angleServoPosition = 0; //初始化位置
     double angleServoSpeed = 0.02;
     volatile double leftTurretServoPosition = 0.5, rightTurretServoPosition = 0.5;
-    /// 旋吸
-    volatile double xiMotorPower = 0;
+    public static double flyWheel_max = 600, flyWheel_kf = 1, flyWheel_kv = 0;
+    public static volatile double flyWheelTargetVelocity = 0;
+    public volatile static double xiMotorMinPower = 0;//0.35;
+    /// 自动射时间参数
+    public static int colorDelayTime = 200;
+    public static int timeRotate1 = 350;
     volatile double TurretCurrentPosition = 0;//炮台位置 left:6350
     /// 状态变量
     volatile int a = 1, b = 1, c = 0, g = 1, p = 1;
     volatile long lastPressTime = 0;
     volatile boolean ledColor = false;
     volatile boolean stop_turret_angleServo_flySpeed = false;
-    /// 车辆相对于场地实时位置
-    volatile double pose2dX = 0, pose2dY = 0;
+    public static int timeRotate2 = 350;
+    public static int timeRotate3 = 350;
+    public static int strikeUpTime = 300;
+    public static int strikeDownTime = 300;
+    public static volatile double TurretTargetAngle_yuan = 6;//-3.5 往右为负，往左为正
+    public static volatile double TurretTargetAngle_jin_1 = -5;//-3    往右为负，往左为正
+    public static volatile double TurretTargetAngle_jin_2 = -4;//-3    往右为负，往左为正
     volatile double pose2dXCM = 0, pose2dYCM = 0;
     volatile double distanc_car_to_red = 0;
-    /// limeLight反馈
-    volatile double xDegrees = 0, yDegrees = 0, distance = 0;
+    public static volatile double TurretTargetAngle_jin_3 = -3;//-3    往右为负，往左为正
     volatile int id = 0;
-    /// /炮台
-    volatile double CarHeading = 0;//车辆imu实时角度
+    ///  >=220cm
+    public static double TurretKpSeeYuan = 0.003, TurretKiSeeYuan = 0.003, TurretKdSeeYuan = 0.00005,
+            TurretkiMaxSeeYuan = 20, TurretKVSeeYuan = 0.0000, TurrentMinErrorSetZeroSeeYuan = 2.5;
     volatile double TurretTargetAngle = 0;//炮台目标角度
+    public static double TurretMinPower = 0, TurretTime = 100;
+
+    ///旋吸
+    volatile double xiMotorPower = 0;
+    ///车辆相对于场地实时位置
+    volatile double pose2dX = 0, pose2dY = 0;
     /// 炮台pid参数
     double TurretKpNotSee = 0.02, TurretKiNotSee = 0.025, TurretKdNotSee = 0.00005,
             TurretkiMaxNotSee = 200, TurrentMinErrorSetZeroNotSee = 3;
@@ -116,6 +114,10 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
     ///  160cm------220cm
     double TurretKpSeeJin_3 = 0.003, TurretKiSeeJin_3 = 0.003, TurretKdSeeJin_3 = 0.00005,
             TurretkiMaxSeeJin_3 = 200, TurretKVSeeJin_3 = 0.0005, TurrentMinErrorSetZeroSeeJin_3 = 4;
+    ///limeLight反馈
+    volatile double xDegrees = 0, yDegrees = 0, distance = 0;
+    ////炮台
+    volatile double CarHeading = 0;//车辆imu实时角度
     volatile double TurretPower = 0;
     double x = 0, y = -47.7, initialHeading = -90; // 单位厘米 初始化位置
 
@@ -152,7 +154,7 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
         }
     }
 
-    public void MecanumInit() {
+    public void MecanumInit(){
 
         runtime.reset();
         while (!robot.magnetic_in.isPressed() && runtime.seconds() <= 2) {
@@ -169,7 +171,7 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
         robot.rightTurretServo.setPosition(0.5);
         sleep(200);
 
-        while (robot.magnetic_in.isPressed()) {
+        while (robot.magnetic_in.isPressed()){
             robot.rotateMotor.setPower(0.1);
         }
         robot.rotateMotor.setPower(0);
@@ -186,10 +188,9 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
         ledColor = false;
 
     }
-
     public void show() {
         //telemetry.clear();
-        telemetry.addData("imu", "%4.2f", robot.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
+        //telemetry.addData("imu", "%4.2f", robot.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
         //telemetry.addData("向上抬球", "%4.2f", strikerServoPosition);
         telemetry.addData("射球角度", "%4.2f", angleServoPosition);
         //telemetry.addData("Gain", gain);
@@ -228,7 +229,6 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
         telemetry.addData("a,b,c,g,p", "%d ,%d, %d, %d, %d", a, b, c, g, p);
         telemetry.update();
     }
-
     public void Mecanum() {
         double y = -gamepad1.left_stick_y;
         double x = gamepad1.left_stick_x;
@@ -264,7 +264,6 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
         robot.br.setPower(brPower);
         robot.bl.setPower(blPower);
     }
-
     public void servoControl() {
 
         /*
@@ -279,18 +278,19 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
         if (stop_turret_angleServo_flySpeed) {
             if (id == 20 && 48 < distance && distance <= 255) {
                 angleServoPosition = 0.004 * distance - 0.031;//0.003
-            } else if ((id == 0 && distanc_car_to_red <= 88) || (id == 24 && distance <= 48)) {
+            } else if ((id == 0 && distanc_car_to_red <= 88) || (id == 24 && distance <= 48)){
                 angleServoPosition = 0;
-            } else {
+            } else{
                 angleServoPosition = 0.7;
             }
-        } else {
+        } else{
             angleServoPosition = 0;
         }
 
         robot.angleServo.setPosition(angleServoPosition);
+        //robot.leftTurretServo.setPosition(-gamepad2.right_stick_x+0.5);
+        //robot.rightTurretServo.setPosition(-gamepad2.right_stick_x+0.5);
     }
-
     public void colorSensor() {
         if (gamepad1.a) gain += 0.005F;
         else if (gamepad1.b && gain > 1) gain -= 0.005F;
@@ -315,12 +315,12 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
         // 前边颜色传感器
         if (distanceFront <= 3 || colors.alpha > 0.04) {//|| colors.alpha>=0.02
             colorFront = "有";
-        } else {
+        } else{
             colorFront = "无";
         }
         // 左边颜色传感器
         if (hsvValuesLeft[2] <= 0.01 && hsvValuesLeft[0] <= 130
-                && (hsvValuesLeft[1] == 1) || hsvValuesLeft[1] == 0) {
+                && (hsvValuesLeft[1] == 1) || hsvValuesLeft[1] == 0){
             colorLeft = "无";
         } else {
             if ((greenMin <= hsvValuesLeft[0] && hsvValuesLeft[0] <= greenMax)
@@ -331,13 +331,13 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
                     && (0.15 < hsvValuesLeft[1] && hsvValuesLeft[1] < 0.95)
                     && hsvValuesLeft[1] > 0.01 && distanceLeft <= 2.5) {
                 colorLeft = "purple";
-            } else {
+            } else{
                 colorLeft = "有";
             }
         }
         // 右边颜色传感器
         if (hsvValuesRight[2] <= 0.01 && hsvValuesRight[0] <= 130
-                && (hsvValuesRight[1] == 1 || hsvValuesRight[1] == 0)) {
+                && (hsvValuesRight[1] == 1 || hsvValuesRight[1] == 0)){
             colorRight = "无";
         } else {
             if ((greenMin <= hsvValuesRight[0] && hsvValuesRight[0] <= greenMax)
@@ -348,13 +348,12 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
                     && (0.15 < hsvValuesRight[1] && hsvValuesRight[1] < 0.95)
                     && hsvValuesRight[1] > 0.01 && distanceRight <= 2.5) {
                 colorRight = "purple";
-            } else {
+            } else{
                 colorRight = "有";
             }
         }
 
     }
-
     //gamepad2.left_stick_y 控制吸轮
     public void xiMotor() {
 
@@ -414,7 +413,7 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
             b = 1;
             g = 1;
             p = 1;
-            ledColor = true;
+            ledColor = false;
         }
         // 控制射球直到看到绿色球
         if (gamepad1.dpad_left) {
@@ -481,6 +480,8 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
         //启动自瞄系统
         if (gamepad1.a || c == 3) {
             stop_turret_angleServo_flySpeed = true;
+            //xiMotorMinPower = -0.75;
+            //sleep(150);
             xiMotorMinPower = 0;
             //if (a == 2) rotateMotorTargetPosition += 0;
             //if (a == 1) rotateMotorTargetPosition += (step - errorPosition);
@@ -562,9 +563,9 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
     }
 
     public class MecanumThread extends Thread {
-        public void run() {
+        public void run(){
             try {
-                while (opModeIsActive()) {
+                while (opModeIsActive()){
                     Mecanum();
                     sleep(10);
                 }
@@ -575,12 +576,12 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
     }
 
     public class otherThread extends Thread {
-        public void run() {
+        public void run(){
             try {
-                while (opModeIsActive()) {
+                while (opModeIsActive()){
                     colorSensor();
                     if (b == 2 && Math.abs(rotateMotorCurrentPosition - rotateMotorNewTargetPosition) <= 150) {//
-                        if (colorFront.equals("有") && c <= 3) {
+                        if (colorFront.equals("有") && c <= 3){
                             c += 1;
                             if (c >= 3) {
                                 c = 3;
@@ -616,7 +617,7 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
     }
 
     public class ledControlThread extends Thread {
-        public void run() {
+        public void run(){
             try {
                 while (opModeIsActive()) {
                     if ((colorLeft.equals("green") || colorRight.equals("green")) && ledColor) {
@@ -625,10 +626,10 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
                     } else if ((colorLeft.equals("purple") || colorRight.equals("purple")) && ledColor) {
                         sendShortPulse(40); // 20ms短脉冲 = 红
                         lastPressTime = System.currentTimeMillis();
-                    } else if (c == 3) {
+                    } else if (c == 3){
                         sendShortPulse(20); // 70ms长脉冲 = 白
                         lastPressTime = System.currentTimeMillis();
-                    } else {
+                    } else{
                         sendShortPulse(80); // 120ms超长脉冲 = 关
                         lastPressTime = System.currentTimeMillis();
                     }
@@ -642,106 +643,6 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
             }
         }
     }
-
-    /*弹舱绝对值位置获取
-    public void rotateAbsolutePosition(){
-        // 3. 读取数据
-        int rawCount = robot.rotateMotor.getCurrentPosition();
-        boolean indexState = robot.indexPin.getState(); // true=高电平, false=低电平
-
-        // 4. 索引下降沿触发归零（假设索引低电平有效）
-        if (!indexState && lastIndexState) {
-            zeroOffset = -rawCount;  // 计算偏移量
-        }
-        lastIndexState = indexState;
-
-        // 5. 计算绝对角度（0-360度）
-        absPos = rawCount + zeroOffset;
-        angleDeg = (absPos % COUNTS_PER_REV) * 360.0 / COUNTS_PER_REV;
-        if (angleDeg < 0) angleDeg += 360;
-    }
-     */
-    //飞轮线程 gamepad2.right_stick_y 控制飞轮
-    public class setFlyWheelPowerThread extends Thread {
-        public void run() {
-            try {
-                // 基础功率（前馈部分，根据目标速度需求设置）
-                double basePower = 0.6;  // 基础功率（前馈）
-                double adjustPower = 0;  // 反馈调节量
-
-                // 轻量化PID参数（仅用于修正补偿小波动）
-                final double kp = flyWheel_kp;//0.0001;   // 比例系数（比纯反馈时小）
-                final double ki = flyWheel_ki;//0.000005; // 积分系数（弱化积分，避免超调）
-                final double kd = flyWheel_kd;//0.00002;  // 微分系数（抑制突变）
-                final double maxAdjust = 0.15; // 限制调节幅度
-
-                ElapsedTime loopTimer = new ElapsedTime();
-                final double loopPeriod = 0.01;
-
-                while (opModeIsActive()) {
-                    double dt = loopTimer.seconds();
-                    loopTimer.reset();
-
-                    //1. 确定目标速度（用于前馈基准）
-                    if (stop_turret_angleServo_flySpeed) {
-                        if (distance <= 160) {
-                            flyWheelTargetVelocity = Math.max(1300, 2.35 * distance + 1100);
-                        } else if (160 < distance && distance <= 185) {
-                            flyWheelTargetVelocity = Math.max(1300, 2.35 * distance + 1150);
-                        } else if (185 < distance && distance <= 200) {
-                            flyWheelTargetVelocity = Math.max(1300, 2.35 * distance + 1200);
-                        } else if (200 < distance && distance <= 230) {
-                            flyWheelTargetVelocity = Math.max(1300, 2.35 * distance + 1250);
-                        } else {
-                            flyWheelTargetVelocity = 1850;
-                        }
-                    } else {
-                        flyWheelTargetVelocity = 0;
-                    }
-
-                    // 2. 前馈功率：根据目标速度设置基础功率（线性映射）
-                    // 假设最大速度2500对应功率1.0，计算目标速度对应的基础功率
-                    basePower = Math.max(0, flyWheelTargetVelocity / 2500.0);
-
-                    // 3. 反馈调节：修正实际速度与目标的偏差
-                    double currentVelocity = robot.flyWheelLeft.getVelocity();
-                    double error = flyWheelTargetVelocity - currentVelocity;
-
-                    // 积分项（限制范围，避免饱和）
-                    double integral = 0;
-                    integral += error * dt;
-                    integral = Math.max(-0.3, Math.min(integral, 0.3));
-
-                    // 微分项
-                    double lastError = 0;
-                    double derivative = (error - lastError) / dt;
-                    lastError = error;
-
-                    // 计算反馈调节量
-                    adjustPower = kp * error + ki * integral + kd * derivative;
-                    adjustPower = Math.max(-maxAdjust, Math.min(adjustPower, maxAdjust));
-
-                    // 4. 最终功率 = 前馈 + 反馈 + 手柄微调
-                    double finalPower = basePower + adjustPower;
-                    finalPower += -gamepad2.right_stick_y * 0.15; // 手柄微调幅度减小
-                    finalPower = Math.max(0, Math.min(finalPower, 1.0));
-
-                    // 5. 应用功率
-                    robot.flyWheelLeft.setPower(finalPower);
-                    robot.flyWheelRight.setPower(finalPower);
-
-                    sleep((long) (loopPeriod * 1000));
-                }
-
-                // 停止时关闭功率
-                robot.flyWheelLeft.setPower(0);
-                robot.flyWheelRight.setPower(0);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }
-    }
-
     public class setRotateMotorPositionThread extends Thread {
         public void run() {
             try {
@@ -801,23 +702,123 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
         }
     }
 
-    public class limeLightThread extends Thread {
-        private static final int VALID_FRAME_THRESHOLD = 3;
-        private static final int QUEUE_SIZE = 5; // 队列长度，可根据需求调整
+    /*弹舱绝对值位置获取
+    public void rotateAbsolutePosition(){
+        // 3. 读取数据
+        int rawCount = robot.rotateMotor.getCurrentPosition();
+        boolean indexState = robot.indexPin.getState(); // true=高电平, false=低电平
+
+        // 4. 索引下降沿触发归零（假设索引低电平有效）
+        if (!indexState && lastIndexState) {
+            zeroOffset = -rawCount;  // 计算偏移量
+        }
+        lastIndexState = indexState;
+
+        // 5. 计算绝对角度（0-360度）
+        absPos = rawCount + zeroOffset;
+        angleDeg = (absPos % COUNTS_PER_REV) * 360.0 / COUNTS_PER_REV;
+        if (angleDeg < 0) angleDeg += 360;
+    }
+     */
+    //飞轮线程 gamepad2.right_stick_y 控制飞轮
+    public class setFlyWheelPowerThread extends Thread {
+        public void run() {
+            try {
+                // 基础功率（前馈部分，根据目标速度需求设置）
+                double basePower = 0.6;  // 基础功率（前馈）
+                double adjustPower = 0;  // 反馈调节量
+
+                // 轻量化PID参数（仅用于修正补偿小波动）
+                final double kp = flyWheel_kp;//0.0001;   // 比例系数（比纯反馈时小）
+                final double ki = flyWheel_ki;//0.000005; // 积分系数（弱化积分，避免超调）
+                final double kd = flyWheel_kd;//0.00002;  // 微分系数（抑制突变）
+                final double maxAdjust = 0.15; // 限制调节幅度
+
+                ElapsedTime loopTimer = new ElapsedTime();
+                final double loopPeriod = 0.01;
+
+                while (opModeIsActive()) {
+                    double dt = loopTimer.seconds();
+                    loopTimer.reset();
+
+                    //1. 确定目标速度（用于前馈基准）
+                    if (stop_turret_angleServo_flySpeed) {
+                        if (distance <= 160){
+                            flyWheelTargetVelocity = Math.max(1300, 2.35 * distance + 1100);
+                        } else if (160 < distance && distance <= 185){
+                            flyWheelTargetVelocity = Math.max(1300, 2.35 * distance + 1150);
+                        } else if (185 < distance && distance <= 200){
+                            flyWheelTargetVelocity = Math.max(1300, 2.35 * distance + 1200);
+                        } else if (200 < distance && distance <= 230){
+                            flyWheelTargetVelocity = Math.max(1300, 2.35 * distance + 1250);
+                        } else{
+                            flyWheelTargetVelocity = 1850;
+                        }
+                    } else{
+                        flyWheelTargetVelocity = 0;
+                    }
+
+                    // 2. 前馈功率：根据目标速度设置基础功率（线性映射）
+                    // 假设最大速度2500对应功率1.0，计算目标速度对应的基础功率
+                    basePower = Math.max(0, flyWheelTargetVelocity / 2500.0);
+
+                    // 3. 反馈调节：修正实际速度与目标的偏差
+                    double currentVelocity = robot.flyWheelLeft.getVelocity();
+                    double error = flyWheelTargetVelocity - currentVelocity;
+
+                    // 积分项（限制范围，避免饱和）
+                    double integral = 0;
+                    integral += error * dt;
+                    integral = Math.max(-0.3, Math.min(integral, 0.3));
+
+                    // 微分项
+                    double lastError = 0;
+                    double derivative = (error - lastError) / dt;
+                    lastError = error;
+
+                    // 计算反馈调节量
+                    adjustPower = kp * error + ki * integral + kd * derivative;
+                    adjustPower = Math.max(-maxAdjust, Math.min(adjustPower, maxAdjust));
+
+                    // 4. 最终功率 = 前馈 + 反馈 + 手柄微调
+                    double finalPower = basePower + adjustPower;
+                    finalPower += -gamepad2.right_stick_y * 0.15; // 手柄微调幅度减小
+                    finalPower = Math.max(0, Math.min(finalPower, 1.0));
+
+                    // 5. 应用功率
+                    robot.flyWheelLeft.setPower(finalPower);
+                    robot.flyWheelRight.setPower(finalPower);
+
+                    sleep((long) (loopPeriod * 1000));
+                }
+
+                // 停止时关闭功率
+                robot.flyWheelLeft.setPower(0);
+                robot.flyWheelRight.setPower(0);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    public class limeLightThread extends Thread{
         private double lastValidDistance = 0.0;
         private double lastValidXDegrees = 0.0; // 新增：保存最后有效的xDegrees
         private int validFrameCount = 0;
+        private static final int VALID_FRAME_THRESHOLD = 3;
+
         // 距离滑动平均队列（已存在）
         private Deque<Double> distanceQueue = new ArrayDeque<>();
         // 新增：xDegrees滑动平均队列
         private Deque<Double> xDegreesQueue = new ArrayDeque<>();
+        private static final int QUEUE_SIZE = 5; // 队列长度，可根据需求调整
 
-        public void run() {
+        public void run(){
             double a1 = 27;
             double h1 = 29.25;
             double h2 = 74.1;
             try {
-                while (opModeIsActive()) {
+                while (opModeIsActive()){
                     LLResult result = robot.limelight.getLatestResult();
                     if (result.isValid()) {
                         List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
@@ -832,7 +833,7 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
                             for (LLResultTypes.FiducialResult fr : fiducialResults) {
                                 // 核心修改：仅处理ID=20的目标
                                 if (fr.getFiducialId() == 20) {
-                                    id = fr.getFiducialId(); // 仅赋值ID=24
+                                    id = fr.getFiducialId(); // 仅赋值ID=20
                                     tempRawXDegrees = fr.getTargetXDegrees(); // 临时存x角度
                                     tempYDegrees = fr.getTargetYDegrees(); // 临时存y角度
                                     tempCurrentDistance = (h2 - h1) / Math.tan((a1 + tempYDegrees) * (Math.PI / 180.0)); // 临时存距离
@@ -908,7 +909,7 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
     }
 
     public class pose2d_setTurrentPosition_Thread extends Thread {
-        public void run() {
+        public void run(){
             try {
                 // 以特定姿势实例化您的 MecanumDrive
                 Pose2d initialPose = new Pose2d(x, y, Math.toRadians(initialHeading));
@@ -941,10 +942,10 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
 
                     TurretTargeting.updateCarPosition(pose2dXCM, pose2dYCM);
                     TurretTargeting.updateCarHeading(CarHeading);
-                    if (stop_turret_angleServo_flySpeed) {
+                    if (stop_turret_angleServo_flySpeed){
                         // 3. 获取炮台目标角
                         if (id == ID && pose2dXCM >= 90) {
-                            if (distance >= 260) {
+                            if (distance >= 260){
                                 TurretCurrentPosition = xDegrees;
                                 TurretTargetAngle = TurretTargetAngle_yuan;//-7.5
                                 TurretKp = TurretKpSeeYuan;
@@ -954,30 +955,30 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
                                 TurretkiMax = TurretkiMaxSeeYuan;
                                 TurrentMinErrorSetZero = TurrentMinErrorSetZeroSeeYuan;
                             }
-                        } else if (id == ID && pose2dXCM < 90) {
+                        } else if (id == ID && pose2dXCM < 90){
                             TurretCurrentPosition = xDegrees;
                             if (pose2dXCM <= -120) {
-                                if (distance <= 120) {
+                                if (distance <= 120){
                                     TurretTargetAngle = TurretTargetAngle_jin_1;
-                                } else if (120 < distance && distance <= 160) {
+                                } else if (120 < distance && distance <= 160){
                                     TurretTargetAngle = TurretTargetAngle_jin_2;
-                                } else {
+                                } else{
                                     TurretTargetAngle = TurretTargetAngle_jin_3;
                                 }
                             } else if (-120 < pose2dXCM && pose2dXCM <= 60) {
-                                if (distance <= 120) {
+                                if (distance <= 120){
                                     TurretTargetAngle = TurretTargetAngle_jin_1;
-                                } else if (120 < distance && distance <= 160) {
+                                } else if (120 < distance && distance <= 160){
                                     TurretTargetAngle = TurretTargetAngle_jin_2;
-                                } else {
+                                } else{
                                     TurretTargetAngle = TurretTargetAngle_jin_3;
                                 }
                             } else if (-60 < pose2dXCM && pose2dXCM <= 60) {
-                                if (distance <= 120) {
+                                if (distance <= 120){
                                     TurretTargetAngle = TurretTargetAngle_jin_1;
-                                } else if (120 < distance && distance <= 160) {
+                                } else if (120 < distance && distance <= 160){
                                     TurretTargetAngle = TurretTargetAngle_jin_2;
-                                } else {
+                                } else{
                                     TurretTargetAngle = TurretTargetAngle_jin_3;
                                 }
                             }
@@ -1018,7 +1019,7 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
                             TurretkiMax = TurretkiMaxNotSee;
                             TurrentMinErrorSetZero = TurrentMinErrorSetZeroNotSee;
                         }
-                    } else {
+                    } else{
                         TurretTargetAngle = 0;
                         TurretCurrentPosition = -robot.xiMotor.getCurrentPosition() / (maxTurretDeadWhellPosition / maxTurretAngle);
                         TurretKp = TurretKpNotSee;
@@ -1036,21 +1037,21 @@ public class MecanumWheel_new_blue_gamePad_2_1 extends LinearOpMode {
                     kd = (error - old_error) / dt;
                     if (stop_turret_angleServo_flySpeed) {
                         if (id == ID) {
-                            TurretPower = 0.5 + (error * TurretKp + ki * TurretKi + kd * TurretKd + TurretKV * (maxTurretDeadWhellPosition / TurretTime));
-                        } else {
                             TurretPower = 0.5 - (error * TurretKp + ki * TurretKi + kd * TurretKd + TurretKV * (maxTurretDeadWhellPosition / TurretTime));
+                        } else {
+                            TurretPower = 0.5 + (error * TurretKp + ki * TurretKi + kd * TurretKd + TurretKV * (maxTurretDeadWhellPosition / TurretTime));
                         }
                     } else {
-                        TurretPower = 0.5 - (error * TurretKp + ki * TurretKi + kd * TurretKd + TurretKV * (maxTurretDeadWhellPosition / TurretTime));
+                        TurretPower = 0.5 + (error * TurretKp + ki * TurretKi + kd * TurretKd + TurretKV * (maxTurretDeadWhellPosition / TurretTime));
                     }
                     TurretPower = Math.max(0.0, Math.min(1.0, TurretPower));
 
-                    if (Math.abs(error) <= TurrentMinErrorSetZero) {
+                    if (Math.abs(error) <= TurrentMinErrorSetZero){
                         TurretPower = 0.5;
                     } else {
-                        if (TurretPower > 0.5) {
+                        if (TurretPower > 0.5){
                             TurretPower = TurretPower + TurretMinPower;
-                        } else if (TurretPower < 0.5) {
+                        } else if (TurretPower < 0.5){
                             TurretPower = TurretPower - TurretMinPower;
                         }
                     }

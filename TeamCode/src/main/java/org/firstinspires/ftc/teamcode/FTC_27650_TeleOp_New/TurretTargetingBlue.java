@@ -19,10 +19,8 @@ public class TurretTargetingBlue {
     private double carHeading = 0.0; // 车辆朝向角度（新规则：x右0°，y正90°，范围[-180, 180]）
 
     // ************************* 核心计算方法：获取炮台需旋转的角度 *************************
-
     /**
      * 计算炮台相对于车体的旋转角度（已做归一化和限位处理）
-     *
      * @return 炮台目标角度（度）：负=左转，正=右转
      */
     public double getTurretTargetAngle() {
@@ -59,10 +57,8 @@ public class TurretTargetingBlue {
     }
 
     // ************************* 数据更新方法（需对接实际定位） *************************
-
     /**
      * 更新车辆实时坐标（从里程计/视觉定位（如AprilTag）获取后调用）
-     *
      * @param x 车辆当前x坐标
      * @param y 车辆当前y坐标
      */
@@ -73,7 +69,6 @@ public class TurretTargetingBlue {
 
     /**
      * 更新车辆朝向角度（由场地实际坐标计算得出，需符合新角度规则）
-     *
      * @param heading 车辆朝向角度（x右0°，y正90°，范围[-180, 180]）
      */
     public void updateCarHeading(double heading) {
