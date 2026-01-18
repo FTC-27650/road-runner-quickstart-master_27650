@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.FTC_27650_AUTO;
+package org.firstinspires.ftc.teamcode.FTC_27650_AUTO_Test;
 
 import static com.acmerobotics.roadrunner.ftc.Actions.runBlocking;
 
@@ -26,10 +26,10 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
 
-@Autonomous(name = "red_2")
+@Autonomous(name = "blue_2")
 @Config
 
-public class RED_2 extends LinearOpMode {
+public class BLUE_2 extends LinearOpMode {
     public static double greenMin = 140, greenMax = 170;
     MyRobotHardware_27650_Auto robot = new MyRobotHardware_27650_Auto(this);
     camera cameraThread = new camera();
@@ -89,6 +89,7 @@ public class RED_2 extends LinearOpMode {
     volatile int upTime = 400;
     volatile int downTime = 400;
     double while_time = 3;
+
     @Override
     public void runOpMode() throws InterruptedException {
         robot.init();
@@ -111,14 +112,14 @@ public class RED_2 extends LinearOpMode {
         sleep(300);
 
         // 以特定姿势实例化您的 MecanumDrive
-        Pose2d initialPose = new Pose2d(62.598, 31.89, Math.toRadians(180));
+        Pose2d initialPose = new Pose2d(62.598, -31.89, Math.toRadians(180));
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
         // actionBuilder 从传递给它的驱动器步骤构建
         TrajectoryActionBuilder seeTag = drive.actionBuilder(initialPose)
-                .strafeToLinearHeading(new Vector2d(18.898, 13.78), Math.toRadians(185));
+                .strafeToLinearHeading(new Vector2d(18.898, -13.78), Math.toRadians(170));
 
-        TrajectoryActionBuilder she_1 = drive.actionBuilder(new Pose2d(18.898, 13.78, Math.toRadians(190)))
-                .strafeToLinearHeading(new Vector2d(51.575, 14.567), Math.toRadians(155));
+        TrajectoryActionBuilder she_1 = drive.actionBuilder(new Pose2d(18.898, -13.78, Math.toRadians(170)))
+                .strafeToLinearHeading(new Vector2d(51.575, -14.567), Math.toRadians(205));
 
         TrajectoryActionBuilder xi_1 = drive.actionBuilder(new Pose2d(-12, -10, Math.toRadians(227)))
                 .turn(Math.toRadians(44))
@@ -152,11 +153,10 @@ public class RED_2 extends LinearOpMode {
 
         camUsing = true;
         runBlocking(new SequentialAction(seeTag.build()));
-        sleep(1000);
+        sleep(500);
         if (id == 21) oldId = 21;
         if (id == 22) oldId = 22;
         if (id == 23) oldId = 23;
-        //sleep(5000);
         camUsing = false;
         runBlocking(new SequentialAction(she_1.build()));
         faShe();

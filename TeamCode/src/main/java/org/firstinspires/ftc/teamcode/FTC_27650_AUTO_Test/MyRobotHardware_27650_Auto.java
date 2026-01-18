@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.FTC_27650_TeleOp;
+package org.firstinspires.ftc.teamcode.FTC_27650_AUTO_Test;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
-public class MyRobotHardware_27650_TeleOp {
+public class MyRobotHardware_27650_Auto {
 
     public DcMotor fl = null;
     public DcMotor fr = null;
@@ -23,10 +23,9 @@ public class MyRobotHardware_27650_TeleOp {
 
     public DcMotorEx rotateMotor = null;
 
-    public Servo strikerServo = null;       //servo hub 0 //down:0.186 up:0.384
-    public Servo angleServo = null;         //servo hub 1 //down:0 up:1
-    public Servo leftRotateServo = null;    //servo hub 2
-    public Servo rightRotateServo = null;   //servo hub 3
+    public Servo strikerServo = null;
+
+    public Servo angleServo = null;
 
     public NormalizedColorSensor colorSensorFront;
     public NormalizedColorSensor colorSensorLeft;
@@ -40,8 +39,7 @@ public class MyRobotHardware_27650_TeleOp {
     IMU imu;
 
     private LinearOpMode myOpMode = null;
-
-    public MyRobotHardware_27650_TeleOp(LinearOpMode opmode) {
+    public MyRobotHardware_27650_Auto(LinearOpMode opmode) {
         myOpMode = opmode;
     }
 
@@ -57,9 +55,9 @@ public class MyRobotHardware_27650_TeleOp {
 
         xiMotor = myOpMode.hardwareMap.get(DcMotor.class, "xm");//e2
 
-        rotateMotor = myOpMode.hardwareMap.get(DcMotorEx.class, "rm");//e3 弹舱
+        rotateMotor = myOpMode.hardwareMap.get(DcMotorEx.class, "rm");//e3
 
-        strikerServo = myOpMode.hardwareMap.get(Servo.class, "ss");//es0  扳机
+        strikerServo = myOpMode.hardwareMap.get(Servo.class, "ss");//es0
 
         angleServo = myOpMode.hardwareMap.get(Servo.class, "as");//es5
 

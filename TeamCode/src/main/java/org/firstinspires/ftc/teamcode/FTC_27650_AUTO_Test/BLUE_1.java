@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.FTC_27650_AUTO;
+package org.firstinspires.ftc.teamcode.FTC_27650_AUTO_Test;
 
 import static com.acmerobotics.roadrunner.ftc.Actions.runBlocking;
 
@@ -26,10 +26,10 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
 
-@Autonomous(name = "red_1")
+@Autonomous(name = "blue_1")
 @Config
 
-public class RED_1 extends LinearOpMode {
+public class BLUE_1 extends LinearOpMode {
     public static double greenMin = 140, greenMax = 170;
     MyRobotHardware_27650_Auto robot = new MyRobotHardware_27650_Auto(this);
     camera cameraThread = new camera();
@@ -37,8 +37,8 @@ public class RED_1 extends LinearOpMode {
     servo_xiMotor servo_xiMotorThread = new servo_xiMotor();
     setFlyMotorVelocity setFlyMotorVelocity = new setFlyMotorVelocity();
     setRotateMotorPositionThread setRotateMotorPositionThread = new setRotateMotorPositionThread();
-    public static double purpleMin = 215, purpleMax = 260;
     public static volatile double flyWheelTargetVelocity = 0;
+    public static double purpleMin = 215, purpleMax = 260;
     public static double fly_kp = 0.01;
     public static double fly_ki = 0.05;
     public static double fly_kd = 0.000005;
@@ -46,9 +46,9 @@ public class RED_1 extends LinearOpMode {
     volatile String colorFront = "无";
     volatile String colorLeft = "无";
     volatile String colorRight = "无";
-    volatile double distanceFront = 0;
-    volatile double distanceLeft = 0;
-    volatile double distanceRight = 0;
+    public static int rotateMotorMaxErrorPosition = 100;
+    public static int errorPosition = 1422;
+    public static double rotate_kp = 0.0006;//0.01;
 
     volatile double strikerServoDownPosition = 0.43;//角度舵机
     volatile double strikerServoUpPosition = 0.09;//角度舵机
@@ -59,24 +59,24 @@ public class RED_1 extends LinearOpMode {
     volatile double range = 0, angleZ = 0, angleY = 0;
     volatile int id = 0;
     volatile int oldId = 0;
-    public static int rotateMotorMaxErrorPosition = 100;
-    volatile double flyWheelCurrentVelocity = 0;
-    public static int errorPosition = 1422;
-    public static double rotate_kp = 0.0006;//0.01;
     public static double rotate_ki = 0.00005;//0.001,
+    volatile double flyWheelCurrentVelocity = 0;
+    public static double rotate_kd = 0.0000006;//0.001;
+    public static double ki_max = 5000;
+    public static double kf = 0;
     volatile double xiMotorPower = 0;
 
     volatile int rotateMotorCurrentPosition = 0;
     volatile int rotateMotorTargetPosition = 0;
     int rotateError = 0;
     volatile double rotateMotorPower = 0;
-    public static double rotate_kd = 0.0000006;//0.001;
-    public static double ki_max = 5000;
-    public static double kf = 0;
     final float[] hsvValuesFront = new float[3]; // 1前面色调 2饱和度
     final float[] hsvValuesLeft = new float[3]; // 1左边色调 2饱和度
     final float[] hsvValuesRight = new float[3];// 1右边色调 2饱和度
-    private ElapsedTime runtime = new ElapsedTime();
+    volatile double distanceFront = 0;
+    volatile double distanceLeft = 0;
+    volatile double distanceRight = 0;
+    volatile int downTime = 400;
     volatile int step = 2731;
     double rotateMotorMinPower = 0.1;
     double rotateMotorMaxPower = 0.8;
@@ -87,7 +87,7 @@ public class RED_1 extends LinearOpMode {
     volatile int p = 1;
 
     volatile int upTime = 400;
-    volatile int downTime = 400;
+    private ElapsedTime runtime = new ElapsedTime();
     double while_time = 3;
 
     @Override
@@ -112,30 +112,30 @@ public class RED_1 extends LinearOpMode {
         sleep(300);
 
         // 以特定姿势实例化您的 MecanumDrive
-        Pose2d initialPose = new Pose2d(-62.20, 37.8, Math.toRadians(270));
+        Pose2d initialPose = new Pose2d(-62.20, -37.8, Math.toRadians(90));
         MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
         // actionBuilder 从传递给它的驱动器步骤构建
         TrajectoryActionBuilder seeTag = drive.actionBuilder(initialPose)
-                .strafeToLinearHeading(new Vector2d(-12, 10), Math.toRadians(190));
+                .strafeToLinearHeading(new Vector2d(-12, -10), Math.toRadians(170));
 
-        TrajectoryActionBuilder she_1 = drive.actionBuilder(new Pose2d(-12, 10, Math.toRadians(190)))
-                .turn(Math.toRadians(-57));
+        TrajectoryActionBuilder she_1 = drive.actionBuilder(new Pose2d(-12, -10, Math.toRadians(170)))
+                .turn(Math.toRadians(57));
 
-        TrajectoryActionBuilder xi_1 = drive.actionBuilder(new Pose2d(-12, 10, Math.toRadians(133)))
-                .turn(Math.toRadians(-44))
-                .splineTo(new Vector2d(-12, 25), Math.toRadians(89),
+        TrajectoryActionBuilder xi_1 = drive.actionBuilder(new Pose2d(-12, -10, Math.toRadians(227)))
+                .turn(Math.toRadians(44))
+                .splineTo(new Vector2d(-12, -25), Math.toRadians(271),
                         new TranslationalVelConstraint(25.0))
-                .splineTo(new Vector2d(-12, 36), Math.toRadians(89),
+                .splineTo(new Vector2d(-12, -36), Math.toRadians(271),
                         new TranslationalVelConstraint(10.0))
                 .waitSeconds(0.6)
-                .splineTo(new Vector2d(-12, 40), Math.toRadians(89),
+                .splineTo(new Vector2d(-12, -40), Math.toRadians(271),
                         new TranslationalVelConstraint(7.0));
         //.waitSeconds(0.5)
         //.splineTo(new Vector2d(-12, -48), Math.toRadians(271),
         //new TranslationalVelConstraint(7.0));
 
-        TrajectoryActionBuilder she_2 = drive.actionBuilder(new Pose2d(-12, 40, Math.toRadians(89)))
-                .strafeToLinearHeading(new Vector2d(-12, 10), Math.toRadians(133));
+        TrajectoryActionBuilder she_2 = drive.actionBuilder(new Pose2d(-12, -40, Math.toRadians(271)))
+                .strafeToLinearHeading(new Vector2d(-12, -10), Math.toRadians(227));
 
         telemetry.addData("初始化", "完毕");
         telemetry.update();
@@ -392,6 +392,77 @@ public class RED_1 extends LinearOpMode {
             }
         }
     }
+
+    public void xiBall() {
+        rotateMotorTargetPosition += (step + errorPosition);//转到准备发射位置
+        sleep(1000);
+        xiMotorPower = 1.0;
+        b = 2;
+        c = 0;
+    }
+
+    public void show() {
+        telemetry.clear();
+        telemetry.addData("ID", "%7d", oldId);
+        telemetry.addData("球颜色 前/左/右", "%s, %s, %s", colorFront, colorLeft, colorRight);
+        telemetry.addData("左飞轮功率/转速", "%4.2f, %4.2f", robot.flyWheelLeft.getPower(), robot.flyWheelLeft.getVelocity());
+        telemetry.addData("右飞轮功率/转速", "%4.2f, %4.2f", robot.flyWheelRight.getPower(), robot.flyWheelRight.getVelocity());
+        telemetry.addData("旋转误差", "%7d", rotateError);
+        telemetry.addData("旋转位置", "%7d", rotateMotorCurrentPosition);
+        telemetry.addData("目标位置 ", "%7d", rotateMotorTargetPosition);
+        telemetry.addData("g / p", "%7d, %7d", g, p);
+        telemetry.update();
+    }
+
+    public void faShe() {
+        flyWheelTargetVelocity = 1550;
+        angleServoPosition = 0.6;
+        rotateMotorTargetPosition += (step - errorPosition);//转到准备发射位置
+        sleep(800);
+        if (oldId == 21) {
+            greenBall();
+            purpleBall();
+            purpleBall();
+        }
+        if (oldId == 22) {
+            purpleBall();
+            greenBall();
+            purpleBall();
+        }
+        if (oldId == 23) {
+            purpleBall();
+            purpleBall();
+            greenBall();
+        }
+        flyWheelTargetVelocity = 0;
+    }
+
+    public void greenBall() {
+        g = 2;
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds() <= while_time) {
+            if (g == 1) break;
+        }
+        g = 1;
+        strikerServoPosition = strikerServoUpPosition;
+        sleep(upTime);
+        strikerServoPosition = strikerServoDownPosition;
+        sleep(downTime);
+    }
+
+    public void purpleBall() {
+        p = 2;
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds() <= while_time) {
+            if (p == 1) break;
+        }
+        p = 1;
+        strikerServoPosition = strikerServoUpPosition;
+        sleep(upTime);
+        strikerServoPosition = strikerServoDownPosition;
+        sleep(downTime);
+    }
+
     public class servo_xiMotor extends Thread {
         public void run() {
             try {
@@ -452,6 +523,7 @@ public class RED_1 extends LinearOpMode {
             }
         }
     }
+
     public class setRotateMotorPositionThread extends Thread {
         public void run() {
             try {
@@ -550,75 +622,5 @@ public class RED_1 extends LinearOpMode {
                 throw new RuntimeException(e);
             }
         }
-    }
-
-    public void xiBall() {
-        rotateMotorTargetPosition += (step + errorPosition);//转到准备发射位置
-        sleep(1000);
-        xiMotorPower = 1.0;
-        b = 2;
-        c = 0;
-    }
-
-    public void show() {
-        telemetry.clear();
-        telemetry.addData("ID", "%7d", oldId);
-        telemetry.addData("球颜色 前/左/右", "%s, %s, %s", colorFront, colorLeft, colorRight);
-        telemetry.addData("左飞轮功率/转速", "%4.2f, %4.2f", robot.flyWheelLeft.getPower(), robot.flyWheelLeft.getVelocity());
-        telemetry.addData("右飞轮功率/转速", "%4.2f, %4.2f", robot.flyWheelRight.getPower(), robot.flyWheelRight.getVelocity());
-        telemetry.addData("旋转误差", "%7d", rotateError);
-        telemetry.addData("旋转位置", "%7d", rotateMotorCurrentPosition);
-        telemetry.addData("目标位置 ", "%7d", rotateMotorTargetPosition);
-        telemetry.addData("g / p", "%7d, %7d", g, p);
-        telemetry.update();
-    }
-
-    public void faShe() {
-        flyWheelTargetVelocity = 1550;
-        angleServoPosition = 0.6;
-        rotateMotorTargetPosition += (step - errorPosition);//转到准备发射位置
-        sleep(800);
-        if (oldId == 21) {
-            greenBall();
-            purpleBall();
-            purpleBall();
-        }
-        if (oldId == 22) {
-            purpleBall();
-            greenBall();
-            purpleBall();
-        }
-        if (oldId == 23) {
-            purpleBall();
-            purpleBall();
-            greenBall();
-        }
-        flyWheelTargetVelocity = 0;
-    }
-
-    public void greenBall() {
-        g = 2;
-        runtime.reset();
-        while (opModeIsActive() && runtime.seconds() <= while_time) {
-            if (g == 1) break;
-        }
-        g = 1;
-        strikerServoPosition = strikerServoUpPosition;
-        sleep(upTime);
-        strikerServoPosition = strikerServoDownPosition;
-        sleep(downTime);
-    }
-
-    public void purpleBall() {
-        p = 2;
-        runtime.reset();
-        while (opModeIsActive() && runtime.seconds() <= while_time) {
-            if (p == 1) break;
-        }
-        p = 1;
-        strikerServoPosition = strikerServoUpPosition;
-        sleep(upTime);
-        strikerServoPosition = strikerServoDownPosition;
-        sleep(downTime);
     }
 }
