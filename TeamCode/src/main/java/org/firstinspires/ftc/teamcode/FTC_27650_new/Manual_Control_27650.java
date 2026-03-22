@@ -57,7 +57,7 @@ public class Manual_Control_27650 extends LinearOpMode {
     double claw_servo_speed = 0.001;
     //**********方法using**********//
     boolean collect_using = true;
-    //********************初始化参数结束********************//
+    //********************初始化参数结束*******************//
 
     double presentVoltage = 0;
 
