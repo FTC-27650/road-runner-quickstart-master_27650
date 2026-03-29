@@ -41,7 +41,7 @@ import com.acmerobotics.roadrunner.ftc.OverflowEncoder;
 import com.acmerobotics.roadrunner.ftc.PositionVelocityPair;
 import com.acmerobotics.roadrunner.ftc.RawEncoder;
 import com.qualcomm.hardware.lynx.LynxModule;
-import com.qualcomm.hardware.rev.Rev9AxisImuOrientationOnRobot;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -62,48 +62,42 @@ import java.util.List;
 
 @Config
 public final class MecanumDrive {
-    public static class Params {
-        // IMU orientation
-        // TODO: fill in these values based on
-        //   see https://ftc-docs.firstinspires.org/en/latest/programming_resources/imu/imu.html?highlight=imu#physical-hub-mounting
-        /*
-        public RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection =
-                RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;
-        public RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection =
-                RevHubOrientationOnRobot.UsbFacingDirection.UP;
-        */
-        public Rev9AxisImuOrientationOnRobot.LogoFacingDirection logoFacingDirection =
-                Rev9AxisImuOrientationOnRobot.LogoFacingDirection.UP;
-        public Rev9AxisImuOrientationOnRobot.I2cPortFacingDirection I2cPortFacingDirection =
-                Rev9AxisImuOrientationOnRobot.I2cPortFacingDirection.FORWARD;
+    public MecanumDrive(HardwareMap hardwareMap, Pose2d pose) {
+        LynxFirmware.throwIfModulesAreOutdated(hardwareMap);
 
-        // drive model parameters
-        public double inPerTick = 0.0019588403247;
-        public double lateralInPerTick = 0.0013843876550023108;//0.0013702491381329621;
-        public double trackWidthTicks = 6136.791841374199;//6356.790255446188;
+        for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
+            module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+        }
 
-        // feedforward parameters (in tick units)
-        public double kS = 1.1842955211339565;//1.2374770180238062;
-        public double kV = 0.0002480053393302651;//0.0002581949257780486;
-        public double kA = 0.00006;
+        // TODO: make sure your config has motors with these names (or change them)
+        //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
+        leftFront = hardwareMap.get(DcMotorEx.class, "fl");
+        leftBack = hardwareMap.get(DcMotorEx.class, "bl");
+        rightBack = hardwareMap.get(DcMotorEx.class, "br");
+        rightFront = hardwareMap.get(DcMotorEx.class, "fr");
 
-        // path profile parameters (in inches)
-        public double maxWheelVel = 120;
-        public double minProfileAccel = -40;
-        public double maxProfileAccel = 60;
+        leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        // turn profile parameters (in radians)
-        public double maxAngVel = Math.PI; // shared with path
-        public double maxAngAccel = Math.PI;
+        // TODO: reverse motor directions if needed
+        //马达方向
+        leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightFront.setDirection(DcMotorSimple.Direction.FORWARD);
+        rightBack.setDirection(DcMotorSimple.Direction.FORWARD);
 
-        // path controller gains
-        public double axialGain = 6;
-        public double lateralGain = 5;
-        public double headingGain = 5; // shared with turn
+        // TODO: make sure your config has an IMU with this name (can be BNO or BHI)
+        //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
+        lazyImu = new LazyHardwareMapImu(hardwareMap, "imu", new RevHubOrientationOnRobot(
+                PARAMS.logoFacingDirection, PARAMS.usbFacingDirection));
 
-        public double axialVelGain = 0.6;
-        public double lateralVelGain = 0.5;
-        public double headingVelGain = 0.5; // shared with turn
+        voltageSensor = hardwareMap.voltageSensor.iterator().next();
+
+        localizer = new ThreeDeadWheelLocalizer(hardwareMap, PARAMS.inPerTick, pose);
+
+        FlightRecorder.write("MECANUM_PARAMS", PARAMS);
     }
 
     public static Params PARAMS = new Params();
@@ -231,39 +225,42 @@ public final class MecanumDrive {
         }
     }
 
-    public MecanumDrive(HardwareMap hardwareMap, Pose2d pose) {
-        LynxFirmware.throwIfModulesAreOutdated(hardwareMap);
+    public static class Params {
+        // IMU orientation
+        // TODO: fill in these values based on
+        //   see https://ftc-docs.firstinspires.org/en/latest/programming_resources/imu/imu.html?highlight=imu#physical-hub-mounting
+        public RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection =
+                RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;
+        public RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection =
+                RevHubOrientationOnRobot.UsbFacingDirection.UP;
 
-        for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
-            module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
-        }
+        // drive model parameters
+        public double inPerTick = 0.0005689553015;
+        public double lateralInPerTick = 0.00040339490790296175;
+        public double trackWidthTicks = 22163.866824404155;
 
-        // TODO: make sure your config has motors with these names (or change them)
-        //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
-        leftFront = hardwareMap.get(DcMotorEx.class, "fl"); //c0
-        leftBack = hardwareMap.get(DcMotorEx.class, "bl");  //c3
-        rightBack = hardwareMap.get(DcMotorEx.class, "br"); //c2
-        rightFront = hardwareMap.get(DcMotorEx.class, "fr");//c1
+        // feedforward parameters (in tick units)
+        public double kS = 0.9143162225100387;
+        public double kV = 0.00007474935774637865;
+        public double kA = 0.00002;
 
-        leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        // path profile parameters (in inches)
+        public double maxWheelVel = 100;
+        public double minProfileAccel = -30;
+        public double maxProfileAccel = 50;
 
-        // TODO: reverse motor directions if needed
-        leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
-        leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
+        // turn profile parameters (in radians)
+        public double maxAngVel = Math.PI; // shared with path
+        public double maxAngAccel = Math.PI;
 
-        // TODO: make sure your config has an IMU with this name (can be BNO or BHI)
-        //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
-        lazyImu = new LazyHardwareMapImu(hardwareMap, "imu", new Rev9AxisImuOrientationOnRobot(
-                PARAMS.logoFacingDirection, PARAMS.I2cPortFacingDirection));
+        // path controller gains
+        public double axialGain = 6;   //前进 / 后退方向
+        public double lateralGain = 6; //左右偏移方向
+        public double headingGain = 6; // shared with turn
 
-        voltageSensor = hardwareMap.voltageSensor.iterator().next();
-
-        localizer = new TwoDeadWheelLocalizer(hardwareMap, lazyImu.get(), PARAMS.inPerTick, pose);
-
-        FlightRecorder.write("MECANUM_PARAMS", PARAMS);
+        public double axialVelGain = 0.6;
+        public double lateralVelGain = 0.6;
+        public double headingVelGain = 0.6; // shared with turn
     }
 
     public void setDrivePowers(PoseVelocity2d powers) {

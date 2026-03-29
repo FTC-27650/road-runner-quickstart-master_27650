@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.FTC_27650_new;
+package org.firstinspires.ftc.teamcode.FTC_27650;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;

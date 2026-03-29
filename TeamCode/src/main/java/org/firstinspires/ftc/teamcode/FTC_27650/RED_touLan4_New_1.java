@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.FTC_27650_new;
+package org.firstinspires.ftc.teamcode.FTC_27650;
 
 import static com.acmerobotics.roadrunner.ftc.Actions.runBlocking;
 
@@ -15,9 +15,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 
 @Config
-@Autonomous(name = "投篮5", group = "Autonomous")
+@Autonomous(name = "投篮4", group = "Autonomous")
 //@Disabled
-public class RED_touLan5_New extends LinearOpMode{
+public class RED_touLan4_New_1 extends LinearOpMode{
 
     private ElapsedTime runtime = new ElapsedTime();
     RobotHardware_27650_new_auto robot = new RobotHardware_27650_new_auto(this);
@@ -62,27 +62,27 @@ public class RED_touLan5_New extends LinearOpMode{
 
         // actionBuilder 从传递给它的驱动器步骤构建
         TrajectoryActionBuilder tab_GAOKUANG_0 = drive.actionBuilder(initialPose)
-                .strafeToLinearHeading(new Vector2d(-56.5,-54), Math.toRadians(43));
+                .strafeToLinearHeading(new Vector2d(-57.5,-54), Math.toRadians(43));
 
-        TrajectoryActionBuilder tab_YB_1 = drive.actionBuilder(new Pose2d(-56.5,-54, Math.toRadians(43)))
+        TrajectoryActionBuilder tab_YB_1 = drive.actionBuilder(new Pose2d(-57.5,-54, Math.toRadians(43)))
                 .strafeToLinearHeading(new Vector2d(-51,-46), Math.toRadians(97));
 
         TrajectoryActionBuilder tab_GAOKUANG_1 = drive.actionBuilder(new Pose2d(-50.5,-46, Math.toRadians(97)))
-                .strafeToLinearHeading(new Vector2d(-56.5,-54), Math.toRadians(43));
+                .strafeToLinearHeading(new Vector2d(-57.5,-54), Math.toRadians(43));
 
-        TrajectoryActionBuilder tab_YB_2 = drive.actionBuilder(new Pose2d(-56.5,-54, Math.toRadians(43)))
+        TrajectoryActionBuilder tab_YB_2 = drive.actionBuilder(new Pose2d(-57.5,-54, Math.toRadians(43)))
                 .strafeToLinearHeading(new Vector2d(-62,-45), Math.toRadians(97));
 
         TrajectoryActionBuilder tab_GAOKUANG_2 = drive.actionBuilder(new Pose2d(-61.5,-45, Math.toRadians(97)))
-                .strafeToLinearHeading(new Vector2d(-56.5,-54), Math.toRadians(43));
+                .strafeToLinearHeading(new Vector2d(-57.5,-54), Math.toRadians(43));
 
-        TrajectoryActionBuilder tab_YB_3 = drive.actionBuilder(new Pose2d(-56.5,-54, Math.toRadians(43)))
+        TrajectoryActionBuilder tab_YB_3 = drive.actionBuilder(new Pose2d(-57.5,-54, Math.toRadians(43)))
                 .strafeToLinearHeading(new Vector2d(-62,-45), Math.toRadians(126));
 
         TrajectoryActionBuilder tab_GAOKUANG_3 = drive.actionBuilder(new Pose2d(-62,-45, Math.toRadians(127)))
-                .strafeToLinearHeading(new Vector2d(-56.5,-54), Math.toRadians(40));
+                .strafeToLinearHeading(new Vector2d(-57.5,-54), Math.toRadians(40));
 
-        TrajectoryActionBuilder tab_YB_4 = drive.actionBuilder(new Pose2d(-56.5,-54, Math.toRadians(40)))
+        TrajectoryActionBuilder tab_YB_4 = drive.actionBuilder(new Pose2d(-57.5,-54, Math.toRadians(40)))
                 .strafeToLinearHeading(new Vector2d(-24.6,-58), Math.toRadians(0));
 
         TrajectoryActionBuilder tab_GAOKUANG_4 = drive.actionBuilder(new Pose2d(-24.6,-58, Math.toRadians(0)))
@@ -196,6 +196,7 @@ public class RED_touLan5_New extends LinearOpMode{
         robot.back_arm_servo.setPosition(0.22);
         sleep(200);
         sliderTargetPosition = 0;
+        /*
         runBlocking(new SequentialAction(tab_YB_4.build()));
 
         //吸4
@@ -218,6 +219,8 @@ public class RED_touLan5_New extends LinearOpMode{
         runBlocking(new SequentialAction(tab_GAOKUANG_4.build()));
         back_arm();
         sleep(500);
+
+         */
 
         runBlocking(new SequentialAction(tab6.build()));
         sliderTargetPosition = 0;

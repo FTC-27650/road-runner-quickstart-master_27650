@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.FTC_27650_new;
+package org.firstinspires.ftc.teamcode.FTC_27650;
 
 import static com.acmerobotics.roadrunner.ftc.Actions.runBlocking;
 
@@ -8,6 +8,7 @@ import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -15,9 +16,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 
 @Config
-@Autonomous(name = "挂高杆_4_新", group = "Autonomous")
-//@Disabled
-public class RED_gaoGan_4_new extends LinearOpMode{
+@Autonomous(name = "挂高杆_3_新", group = "Autonomous")
+@Disabled
+public class RED_gaoGan_3_new extends LinearOpMode{
 
     private ElapsedTime runtime = new ElapsedTime();
     RobotHardware_27650_new_auto robot = new RobotHardware_27650_new_auto(this);
@@ -81,9 +82,13 @@ public class RED_gaoGan_4_new extends LinearOpMode{
                 .waitSeconds(0.4)
                 .strafeToLinearHeading(new Vector2d(46,-43), Math.toRadians(65))//吸2
                 .waitSeconds(0.8)
-                .strafeToLinearHeading(new Vector2d(41,-45), Math.toRadians(310)); //吐2
+                .strafeToLinearHeading(new Vector2d(41,-45), Math.toRadians(310)) //吐2
+                .waitSeconds(0.4)
+                .strafeToLinearHeading(new Vector2d(54,-40), Math.toRadians(55))//吸3
+                .waitSeconds(0.9)
+                .strafeToLinearHeading(new Vector2d(34.84,-45), Math.toRadians(310));//吐3;
 
-        TrajectoryActionBuilder tab_jia_2 = drive.actionBuilder(new Pose2d(41,-45, Math.toRadians(310)))
+        TrajectoryActionBuilder tab_jia_2 = drive.actionBuilder(new Pose2d(34.84,-45, Math.toRadians(310)))
                 .strafeToLinearHeading(new Vector2d(37,-52.5), Math.toRadians(100))
                 .strafeToConstantHeading(new Vector2d(37,-61));
 
@@ -96,14 +101,6 @@ public class RED_gaoGan_4_new extends LinearOpMode{
                 .strafeToConstantHeading(new Vector2d(36,-61));
 
         TrajectoryActionBuilder tab_gaoGan_3 = drive.actionBuilder(new Pose2d(36,-61, Math.toRadians(100)))
-                .strafeToLinearHeading(new Vector2d(-4,-40), Math.toRadians(280))
-                .strafeToConstantHeading(new Vector2d(-4,-35));
-
-        TrajectoryActionBuilder tab_jia_4 = drive.actionBuilder(new Pose2d(-4,-35, Math.toRadians(280)))
-                .strafeToLinearHeading(new Vector2d(36,-50), Math.toRadians(100))
-                .strafeToConstantHeading(new Vector2d(36,-61));
-
-        TrajectoryActionBuilder tab_gaoGan_4 = drive.actionBuilder(new Pose2d(36,-61, Math.toRadians(100)))
                 .strafeToLinearHeading(new Vector2d(-8,-40), Math.toRadians(280))
                 .strafeToConstantHeading(new Vector2d(-8,-35));
 
@@ -162,24 +159,9 @@ public class RED_gaoGan_4_new extends LinearOpMode{
         robot.claw_servo.setPosition(0.62);//打开夹子
         sleep(300);
 
-        //夹4
-        sliderTargetPosition = 0;
-        runBlocking(new SequentialAction(tab_jia_4.build()));
-        robot.claw_servo.setPosition(0.34); //夹 0.34 松开 0.62
-        sleep(300);
-        sliderTargetPosition = 1600;
-        sleep(100);
-
-        //挂第4个
-        sliderTargetPosition = 1450;
-        runBlocking(new SequentialAction(tab_gaoGan_4.build()));
-        sliderTargetPosition = 1000;
-        sleep(400);
-        robot.claw_servo.setPosition(0.62);//打开夹子
-        sleep(300);
-
         sliderTargetPosition = 0;
         runBlocking(new SequentialAction(tab_tingKao.build()));
+
         sleep(2000);
 
     }
@@ -213,12 +195,17 @@ public class RED_gaoGan_4_new extends LinearOpMode{
                 robot.retract_left_servo.setPosition(0.5);
                 robot.retract_right_servo.setPosition(0.5);
                 sleep(1300);
+
+                collect_motor_xi_3.start(); //xi 3
+                retract_set_position_3.start();
+                sleep(1600);
+                collect_motor_tu_3.start();
+                sleep(600);
                 retract_left_servo_position = 0.71;
                 retract_right_servo_position = 0.29;
                 robot.retract_left_servo.setPosition(0.71);
                 robot.retract_right_servo.setPosition(0.29);
                 sleep(2000);
-
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
