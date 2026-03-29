@@ -40,9 +40,8 @@ public class TurretTargetingBlue {
         double normalizedAngle = normalizeAngle(rawAngle);
 
         // 步骤5：机械限位处理（限制在-60~60°）
-        double limitedAngle = Math.max(TURRET_MAX_LEFT, Math.min(TURRET_MAX_RIGHT, normalizedAngle));
 
-        return limitedAngle;
+        return Math.max(TURRET_MAX_LEFT, Math.min(TURRET_MAX_RIGHT, normalizedAngle));
     }
 
     // 辅助方法：角度归一化到[-180, 180]度
