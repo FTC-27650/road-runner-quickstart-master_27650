@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="MeepMeep" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="com.example.meepmeeptesting.MeepMeepTesting" />
-    <module name="road-runner-quickstart-master-27650.MeepMeepTesting.main" />
+    <module name="road-runner-quickstart-master_27650.MeepMeepTesting.main" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>
